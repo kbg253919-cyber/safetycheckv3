@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
+  <title>학교 안전점검의 날 스마트 체크리스트</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    /* A4 출력용 인쇄 스타일 정의 */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+        font-size: 10pt !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-area {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .page-break {
+        page-break-after: always;
+      }
+    }
+    
+    /* 캔버스 터치 스크롤 방지 및 스타일 */
+    .signature-canvas {
+      touch-action: none;
+    }
+    
+    /* 커스텀 스크롤바 디자인 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+  <div id="app" class="flex-grow flex flex-col max-w-4xl w-full mx-auto bg-white shadow-md relative min-h-screen">
+    
+    <header class="no-print bg-emerald-600 text-white px-4 py-3.5 flex justify-between items-center shadow-md">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-shield-halved text-2xl text-yellow-300 animate-pulse"></i>
+        <div>
+          <h1 class="font-bold text-base md:text-lg leading-tight">학교 안전점검의 날</h1>
+          <p class="text-[11px] text-emerald-100">스마트 현장 점검 시스템</p>
+        </div>
+      </div>
+      <button onclick="openAdminPasswordModal()" class="hover:bg-emerald-700 p-2.5 rounded-full transition-all duration-200 flex items-center justify-center text-white" title="관리자 모드" aria-label="관리자 모드 진입">
+        <i class="fa-solid fa-wrench text-xl"></i>
+      </button>
+    </header>
+
+    <main class="flex-grow p-3 md:p-6">
+
+      <section id="screen-setup" class="screen-view flex flex-col gap-5 py-2">
+        <div class="text-center my-1">
+          <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1.5 rounded-full uppercase tracking-wider">Step 1. 정보 입력</span>
+          <h2 class="text-xl md:text-2xl font-bold mt-2 text-slate-900">안전점검 기초정보 등록</h2>
+          <p class="text-xs md:text-sm text-slate-500 mt-1">점검을 진행할 장소, 날짜 및 점검자 정보를 입력해주세요.</p>
+        </div>
+
+        <div class="space-y-4 bg-slate-50 p-4 md:p-5 rounded-2xl border border-slate-200">
+          <div class="space-y-2">
+            <label id="label-location" class="block text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <i class="fa-solid fa-location-dot text-emerald-600"></i> 점검 위치 선택
+            </label>
+            <div class="relative">
+              <button type="button" id="btn-location-select" onclick="toggleLocationDropdown()" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-left text-sm font-medium focus:ring-2 focus:ring-emerald-500 flex justify-between items-center transition-all" aria-labelledby="label-location">
+                <span id="selected-location-text" class="text-slate-500">점검할 장소를 선택해 주세요</span>
+                <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200" id="location-arrow"></i>
+              </button>
+              
+              <div id="location-dropdown" class="hidden absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-20 max-h-72 overflow-y-auto">
+                <div class="p-2 border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500 tracking-wider">일반 교실 및 유관 시설</div>
+                <div class="grid grid-cols-2 p-1 gap-1" id="group-classroom"></div>
+                
+                <div class="p-2 border-t border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500 tracking-wider">보건 전용 구역</div>
+                <div class="grid grid-cols-1 p-1 gap-1" id="group-medical"></div>
+                
+                <div class="p-2 border-t border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500 tracking-wider">공용/위생 시설</div>
+                <div class="grid grid-cols-1 p-1 gap-1" id="group-public"></div>
+                
+                <div class="p-2 border-t border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500 tracking-wider">외부/놀이 공간</div>
+                <div class="grid grid-cols-1 p-1 gap-1" id="group-outdoor"></div>
+
+                <div class="p-2 border-t border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500 tracking-wider">소방/전기/기계/설비</div>
+                <div class="grid grid-cols-1 p-1 gap-1" id="group-utility"></div>
+
+                <div class="p-2 border-t border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500 tracking-wider">등하교 및 통학버스</div>
+                <div class="grid grid-cols-1 p-1 gap-1" id="group-transit"></div>
+
+                <div class="p-2 border-t border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500 tracking-wider">급식/조리 시설</div>
+                <div class="grid grid-cols-1 p-1 gap-1" id="group-cafeteria"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label for="input-date" class="block text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <i class="fa-regular fa-calendar-check text-emerald-600"></i> 점검일자
+            </label>
+            <input type="date" id="input-date" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all font-medium text-slate-700">
+          </div>
+
+          <div class="space-y-2">
+            <label for="input-inspector" class="block text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <i class="fa-solid fa-user-check text-emerald-600"></i> 점검자 성명
+            </label>
+            <input type="text" id="input-inspector" placeholder="이름을 입력해주세요" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all font-medium text-slate-700">
+          </div>
+        </div>
+
+        <button onclick="startInspection()" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white py-3.5 px-6 rounded-xl font-bold text-base shadow-md flex items-center justify-center gap-3 transition-all duration-150">
+          <span>검사 시작하기</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </section>
+
+
+      <section id="screen-checklist" class="screen-view hidden flex flex-col gap-4 py-1">
+        <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+          <div>
+            <span class="bg-amber-100 text-amber-800 text-[11px] font-semibold px-2.5 py-1 rounded-full">Step 2. 점검 진행</span>
+            <h2 class="text-lg font-bold mt-1 text-slate-900" id="checklist-location-title">점검 위치</h2>
+          </div>
+          <div class="text-right text-xs text-slate-500 font-medium">
+            <p id="checklist-date-info">점검일: -</p>
+            <p id="checklist-inspector-info">점검자: -</p>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 text-blue-800 p-3 rounded-xl text-xs leading-relaxed flex gap-2 items-start">
+          <i class="fa-solid fa-circle-info text-sm mt-0.5 text-blue-500"></i>
+          <div>
+            <strong class="font-bold">기호 안내 :</strong> [점검 결과] 칸을 터치/클릭하면 상태를 순환 변경할 수 있습니다.<br>
+            <strong>○</strong>: 상태 좋음 | <strong>△</strong>: 전문 점검 요구 | <strong>X</strong>: 이상 있음 (개선이 필요함)
+          </div>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-sm bg-white max-w-full">
+          <table class="w-full text-left border-collapse min-w-[550px] table-fixed">
+            <thead>
+              <tr class="bg-emerald-50 text-emerald-900 border-b border-emerald-100 text-xs font-bold">
+                <th class="py-2.5 px-2 text-center w-[15%]">분야</th>
+                <th class="py-2.5 px-3 w-[45%]">점검 항목</th>
+                <th class="py-2.5 px-2 text-center w-[18%]">점검 결과</th>
+                <th class="py-2.5 px-3 w-[22%]">개선 사항</th>
+              </tr>
+            </thead>
+            <tbody id="checklist-tbody" class="divide-y divide-slate-200 text-xs md:text-sm">
+              </tbody>
+          </table>
+        </div>
+
+        <div class="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200 mt-1">
+          <label for="input-etc" class="block text-sm font-bold text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-comment-dots text-slate-500"></i> 기타사항
+          </label>
+          <textarea id="input-etc" rows="3" placeholder="점검 중 발견된 기타 특이사항이나 기록할 점을 자유롭게 입력해 주세요." class="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all"></textarea>
+        </div>
+
+        <div class="flex gap-3 mt-2">
+          <button onclick="changeScreen('screen-setup')" class="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 py-3.5 px-4 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2">
+            <i class="fa-solid fa-chevron-left"></i>
+            <span>이전으로</span>
+          </button>
+          <button onclick="submitChecklist()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white py-3.5 px-6 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all">
+            <span>입력 완료</span>
+            <i class="fa-solid fa-circle-check"></i>
+          </button>
+        </div>
+      </section>
+
+
+      <section id="screen-signature" class="screen-view hidden flex flex-col gap-4 py-1">
+        <div class="text-center my-1 no-print">
+          <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1.5 rounded-full">Step 3. 최종 결재</span>
+          <h2 class="text-xl font-bold mt-2 text-slate-900">결과 확인 및 서명</h2>
+          <p class="text-xs text-slate-500 mt-1">작성된 문서를 최종 확인하고 하단에 서명해주세요 (A4 출력 규격)</p>
+        </div>
+
+        <div class="border border-slate-300 rounded-xl shadow-lg bg-white p-4 md:p-8 relative overflow-hidden" id="report-page">
+          <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
+            <div>
+              <h3 class="text-xl md:text-2xl font-black text-slate-900 underline decoration-emerald-500 decoration-4 underline-offset-8">안전점검 결과 보고서</h3>
+              <p class="text-[10px] text-slate-400 mt-2" id="doc-id-stamp">문서번호: AUTO-SMART-CHECK</p>
+            </div>
+            <div class="text-right text-[11px] text-slate-500">
+              <p>학교 안전점검의 날 기록대장</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100 mb-4 text-xs">
+            <div><span class="text-slate-400 font-medium">점검 위치:</span> <strong id="report-location" class="text-slate-800">-</strong></div>
+            <div><span class="text-slate-400 font-medium">점검 일자:</span> <strong id="report-date" class="text-slate-800">-</strong></div>
+            <div><span class="text-slate-400 font-medium">점검자:</span> <strong id="report-inspector" class="text-slate-800">-</strong></div>
+          </div>
+
+          <div class="overflow-x-auto border border-slate-300 rounded-lg max-w-full">
+            <table class="w-full text-[11px] md:text-xs text-left border-collapse table-fixed min-w-[500px]">
+              <thead>
+                <tr class="bg-slate-100 border-b border-slate-300 text-slate-700 font-bold">
+                  <th class="py-2 px-2 border-r border-slate-300 w-[15%] text-center">분야</th>
+                  <th class="py-2 px-3 border-r border-slate-300 w-[45%]">점검 항목</th>
+                  <th class="py-2 px-2 border-r border-slate-300 w-[15%] text-center">점검 결과</th>
+                  <th class="py-2 px-3 w-[25%]">개선 및 정비 사항</th>
+                </tr>
+              </thead>
+              <tbody id="report-table-body" class="divide-y divide-slate-300">
+                </tbody>
+            </table>
+          </div>
+
+          <div class="mt-3 border border-slate-300 rounded-lg p-3 text-xs">
+            <div class="font-bold text-slate-700 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-file-invoice text-slate-400"></i> 종합 의견 및 기타 건의 사항
+            </div>
+            <div id="report-etc-text" class="text-slate-600 italic whitespace-pre-wrap min-h-[24px]">작성된 기타사항이 없습니다.</div>
+          </div>
+
+          <div class="mt-4 flex flex-col items-center justify-center pt-3 border-t border-slate-200">
+            <p class="text-xs md:text-sm font-semibold text-slate-700 mb-2 flex items-center gap-1.5 text-center">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i> 위의 사항에 대하여 성실하게 안전점검을 수행하였습니다.
+            </p>
+            
+            <div class="flex items-center gap-4 mt-1">
+              <span class="text-slate-500 font-bold text-xs md:text-sm">점검자 서명:</span>
+              <div class="relative bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl overflow-hidden w-48 md:w-64 h-20 shadow-inner no-print" id="signature-container">
+                <canvas id="signature-canvas" class="signature-canvas w-full h-full cursor-crosshair"></canvas>
+                <button onclick="clearSignature()" class="absolute right-2 top-2 bg-slate-200 hover:bg-slate-300 text-slate-600 hover:text-slate-800 text-[10px] font-bold py-1 px-2 rounded-md transition-all" title="지우기">
+                  지우기
+                </button>
+              </div>
+              <div id="print-signature-img-wrapper" class="h-16 w-36 md:h-20 md:w-44 border border-slate-200 rounded-lg flex items-center justify-center bg-slate-50">
+                <span id="signature-placeholder-text" class="text-slate-300 text-[11px]">서명 전</span>
+                <img id="print-signature-img" class="max-h-full max-w-full object-contain hidden" alt="서명 이미지">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-2 no-print">
+          <button onclick="changeScreen('screen-checklist')" class="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 py-3.5 px-4 rounded-xl font-bold text-sm transition-colors">
+            이전 단계 수정
+          </button>
+          <button onclick="submitFinalReport()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 px-6 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all">
+            <span>제출 및 완료</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </section>
+
+
+      <section id="admin-screen" class="screen-view hidden flex flex-col gap-4 py-1">
+        <div class="flex justify-between items-center border-b border-slate-200 pb-3">
+          <div>
+            <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+              <i class="fa-solid fa-gears mr-1"></i> System Administrator
+            </span>
+            <h2 class="text-xl font-bold mt-1 text-slate-900">안전점검 현황 대시보드</h2>
+          </div>
+          <button onclick="exitAdminMode()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all">
+            <i class="fa-solid fa-house"></i>
+            <span>메인으로</span>
+          </button>
+        </div>
+
+        <div class="bg-white p-4 border border-slate-200 rounded-xl shadow-sm flex flex-col md:flex-row gap-3 justify-between items-start md:items-center">
+          <div class="flex flex-wrap items-center gap-2">
+            <label for="admin-month-select" class="text-xs md:text-sm font-bold text-slate-600 flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar text-emerald-600"></i> 월별 리포트 조회:
+            </label>
+            <select id="admin-month-select" onchange="renderAdminDashboard()" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 text-slate-700">
+              </select>
+          </div>
+          
+          <div class="w-full md:w-auto">
+            <button onclick="exportToCSV()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition-all">
+              <i class="fa-solid fa-file-excel"></i>
+              <span>구글 스프레드시트 호환용 CSV 다운로드</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-slate-50 p-3 border border-slate-200 rounded-xl text-center">
+            <p class="text-[11px] text-slate-500 font-bold">당월 총 점검 건수</p>
+            <p id="stat-total-cnt" class="text-xl font-extrabold text-slate-800 mt-0.5">0건</p>
+          </div>
+          <div class="bg-emerald-50 p-3 border border-emerald-200 rounded-xl text-center">
+            <p class="text-[11px] text-emerald-700 font-bold">우수 항목 (○)</p>
+            <p id="stat-ok-cnt" class="text-xl font-extrabold text-emerald-600 mt-0.5">0개</p>
+          </div>
+          <div class="bg-amber-50 p-3 border border-amber-200 rounded-xl text-center">
+            <p class="text-[11px] text-amber-700 font-bold">전문 점검 요구 (△)</p>
+            <p id="stat-warn-cnt" class="text-xl font-extrabold text-amber-600 mt-0.5">0개</p>
+          </div>
+          <div class="bg-red-50 p-3 border border-red-200 rounded-xl text-center">
+            <p class="text-[11px] text-red-700 font-bold">이상 항목 (X)</p>
+            <p id="stat-danger-cnt" class="text-xl font-extrabold text-red-600 mt-0.5">0개</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-sm bg-white max-w-full">
+          <table class="w-full text-left border-collapse min-w-[720px] table-fixed">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 border-b border-slate-200 text-xs font-bold tracking-wider">
+                <th class="py-2.5 px-3 w-[15%]">점검 일자</th>
+                <th class="py-2.5 px-3 w-[25%]">점검 장소</th>
+                <th class="py-2.5 px-3 w-[28%]">검사 결과 요약</th>
+                <th class="py-2.5 px-3 w-[12%]">점검자</th>
+                <th class="py-2.5 px-2 w-[10%] text-center">서명</th>
+                <th class="py-2.5 px-2 w-[10%] text-center">작업</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body" class="divide-y divide-slate-200 text-xs font-medium text-slate-600">
+              </tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <section id="admin-detail-view" class="screen-view hidden flex flex-col gap-4 py-1">
+        <div class="no-print bg-slate-100 border border-slate-200 p-3 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="bg-indigo-600 text-white text-[11px] px-2 py-0.5 rounded font-bold">A4 뷰어</span>
+            <p class="text-xs text-slate-600 font-semibold">종이 인쇄 시 외각 버튼 및 푸터가 숨겨지고 A4 양식만 출력됩니다.</p>
+          </div>
+          <div class="flex gap-1.5 w-full sm:w-auto justify-end">
+            <button onclick="changeScreen('admin-screen')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all">
+              <i class="fa-solid fa-arrow-left"></i><span>뒤로</span>
+            </button>
+            <button id="btn-admin-detail-delete" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all shadow-sm">
+              <i class="fa-solid fa-trash-can"></i><span>삭제</span>
+            </button>
+            <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all shadow-sm">
+              <i class="fa-solid fa-print"></i><span>출력</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="admin-report-container" class="bg-white">
+          </div>
+
+        <div class="no-print flex justify-center gap-8 py-4 border-t border-slate-200 mt-1">
+          <button onclick="changeScreen('admin-screen')" class="flex flex-col items-center gap-1 group text-slate-500 hover:text-indigo-600 transition-all">
+            <div class="bg-slate-100 group-hover:bg-indigo-50 p-3 rounded-full border border-slate-200 group-hover:border-indigo-200 transition-all">
+              <i class="fa-solid fa-arrow-rotate-left text-base"></i>
+            </div>
+            <span class="text-[11px] font-bold">목록으로</span>
+          </button>
+          <button onclick="saveReportAsPDF()" class="flex flex-col items-center gap-1 group text-slate-500 hover:text-emerald-600 transition-all">
+            <div class="bg-slate-100 group-hover:bg-emerald-50 p-3 rounded-full border border-slate-200 group-hover:border-emerald-200 transition-all">
+              <i class="fa-solid fa-floppy-disk text-base"></i>
+            </div>
+            <span class="text-[11px] font-bold">PDF 저장</span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="no-print bg-slate-100 border-t border-slate-200 text-center py-3 text-xs text-slate-400 font-semibold">
+      © 2026 School Safety Net All Rights Reserved.
+    </footer>
+  </div>
+
+
+  <div id="password-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl border border-slate-100 flex flex-col gap-3">
+      <div class="text-center">
+        <div class="mx-auto w-10 h-10 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-2">
+          <i class="fa-solid fa-lock text-lg animate-bounce"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-900">관리자 인증</h3>
+        <p class="text-[11px] text-slate-400 mt-0.5">보안 패스워드를 입력하세요.</p>
+      </div>
+      
+      <div class="relative w-full">
+        <input type="password" id="admin-pwd-input" readonly class="w-full text-center text-xl font-black bg-slate-100 border border-slate-200 rounded-xl py-2.5 focus:outline-none tracking-widest text-slate-800" placeholder="••••" aria-label="관리자 비밀번호">
+      </div>
+
+      <div class="grid grid-cols-3 gap-1.5 mt-1">
+        <script>
+          for (let i = 1; i <= 9; i++) {
+            document.write(`<button onclick="pressKey('${i}')" class="bg-slate-100 hover:bg-slate-200 py-2.5 rounded-xl font-bold text-base active:scale-95 transition-all text-slate-700">${i}</button>`);
+          }
+        </script>
+        <button onclick="pressKey('C')" class="bg-red-50 hover:bg-red-100 text-red-600 py-2.5 rounded-xl font-bold text-xs active:scale-95 transition-all">지우기</button>
+        <button onclick="pressKey('0')" class="bg-slate-100 hover:bg-slate-200 py-2.5 rounded-xl font-bold text-base active:scale-95 transition-all text-slate-700">0</button>
+        <button onclick="submitAdminPassword()" class="bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl font-bold text-xs active:scale-95 transition-all">확인</button>
+      </div>
+      <button onclick="closeAdminPasswordModal()" class="w-full text-slate-400 hover:text-slate-600 font-semibold text-xs py-1 mt-0.5">취소</button>
+    </div>
+  </div>
+
+  <div id="edit-report-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 shadow-2xl border border-slate-100 max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-slate-200 pb-2.5 mb-3">
+        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+          <i class="fa-solid fa-pen-to-square text-purple-600"></i> 점검 기록 수정 (관리자용)
+        </h3>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-lg" aria-label="모달 닫기"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="flex-grow overflow-y-auto pr-1 space-y-3.5 text-xs">
+        <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100 font-medium">
+          <div><span class="text-slate-400 font-bold">위치:</span> <strong id="edit-meta-location" class="text-slate-700"></strong></div>
+          <div><span class="text-slate-400 font-bold">날짜:</span> <strong id="edit-meta-date" class="text-slate-700"></strong></div>
+          <div><span class="text-slate-400 font-bold">점검자:</span> <strong id="edit-meta-inspector" class="text-slate-700"></strong></div>
+        </div>
+
+        <div class="border border-slate-200 rounded-lg overflow-hidden max-w-full">
+          <table class="w-full text-left border-collapse text-[11px] table-fixed min-w-[500px]">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                <th class="py-2 px-2 w-[15%] text-center">분야</th>
+                <th class="py-2 px-2 w-[45%]">점검 항목</th>
+                <th class="py-2 px-2 w-[20%] text-center">점검결과</th>
+                <th class="py-2 px-2 w-[20%]">개선 사항</th>
+              </tr>
+            </thead>
+            <tbody id="edit-items-tbody" class="divide-y divide-slate-200">
+              </tbody>
+          </table>
+        </div>
+
+        <div class="space-y-1.5">
+          <label for="edit-etc-textarea" class="block font-bold text-slate-700">종합 의견 및 기타사항 수정</label>
+          <textarea id="edit-etc-textarea" rows="2" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+        </div>
+      </div>
+
+      <div class="mt-4 border-t border-slate-200 pt-3 flex justify-end gap-2">
+        <button onclick="closeEditModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2 rounded-xl transition-all">취소</button>
+        <button onclick="saveEditedReport()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-100">
+      <div class="flex items-center gap-3 text-red-600 mb-2">
+        <i class="fa-solid fa-circle-exclamation text-2xl"></i>
+        <h3 class="text-base font-bold text-slate-900">기록 삭제 확인</h3>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        해당 점검 이력을 완전히 삭제하시겠습니까?<br>
+        <strong class="text-red-600">삭제 후에는 데이터를 복구할 수 없습니다.</strong>
+      </p>
+      <div class="mt-4 flex justify-end gap-2">
+        <button onclick="closeDeleteModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-lg transition-all">
+          취소
+        </button>
+        <button id="btn-delete-confirm-action" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition-all shadow-sm">
+          삭제하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="alert-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl border border-slate-100">
+      <div class="flex items-center gap-3 text-amber-600 mb-2">
+        <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+        <h3 class="text-sm font-bold text-slate-900" id="alert-title">안내</h3>
+      </div>
+      <p id="alert-message" class="text-xs text-slate-600 leading-relaxed">알림 메시지 본문입니다.</p>
+      <div class="mt-4 text-right">
+        <button onclick="closeAlert()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all">
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // [데이터 설계] - 점검 내용 목록 정의
+    const LOCATION_CHECKLISTS = {
+      "classrooms": [
+        { category: "1. 교실바닥", item: "1) 바닥의 안전상태 (바닥균열, 습기, 마감재 탈락 및 노후화, 보행 장애물 여부)" },
+        { category: "2. 교실벽", item: "1) 벽체 안전상태 (균열 및 기울임 여부)" },
+        { category: "2. 교실벽", item: "2) 벽체 부착물의 안전상태 (거울, TV, 게시판, 냉난방 설비, 선풍기 등의 고정상태)" },
+        { category: "2. 교실벽", item: "3) 콘센트의 안전상태 (먼지/탄 자국, 고정 불량, 문어발식 사용여부, 안전캡 유무 등)" },
+        { category: "3. 교실문", item: "1) 出입문 안전상태 (레일, 손 끼임 방지, 부착물 등 상태)" },
+        { category: "4. 교실창호", item: "1) 창문 안전상태 (유리, 개폐안전, 안전망 상태)" },
+        { category: "5. 천장", item: "1) 천장의 마감재 안전상태 (처짐, 파손, 누수흔적 등 상태)" },
+        { category: "5. 천장", item: "2) 천장 부착물 안전상태 (전등, 처짐 상태)" },
+        { category: "6. 화재", item: "1) 미사용 전기콘센트에 안전 덮개 장착 여부" },
+        { category: "6. 화재", item: "2) 화재 감지기 설치 및 작동 여부" },
+        { category: "6. 화재", item: "3) 전원점검 (불필요한 전원, 콘센트 차단)" },
+        { category: "7. 기타", item: "1) 책상, 의자, 웨건, 이동칠판 관리상태 (파손, 작동 등)" }
+      ],
+      "medical": [
+        { category: "1. 교실바닥", item: "1) 바닥의 안전상태 (바닥균열, 습기, 마감재 탈락 및 노후화, 보행 장애물 여부)" },
+        { category: "2. 교실벽", item: "1) 벽체 안전상태 (균열 및 기울임 여부)" },
+        { category: "2. 교실벽", item: "2) 벽체 부착물의 안전상태 (거울, TV, 게시판, 냉난방 설비, 선풍기 등의 고정상태)" },
+        { category: "2. 교실벽", item: "3) 콘센트의 안전상태 (먼지/탄 자국, 고정 불량, 문어발식 사용여부, 안전캡 유무 등)" },
+        { category: "3. 교실문", item: "1) 출입문 안전상태 (레일, 손 끼임 방지, 부착물 등 상태)" },
+        { category: "4. 교실창호", item: "1) 창문 안전상태 (유리, 개폐안전, 안전망 상태)" },
+        { category: "5. 천장", item: "1) 천장의 마감재 안전상태 (처짐, 파손, 누수흔적 등 상태)" },
+        { category: "5. 천장", item: "2) 천장 부착물 안전상태 (전등, 처짐 상태)" },
+        { category: "6. 화재", item: "1) 미사용 전기콘센트에 안전 덮개 장착 여부" },
+        { category: "6. 화재", item: "2) 화재 감지기 설치 및 작동 여부" },
+        { category: "6. 화재", item: "3) 전원점검 (불필요한 전원, 콘센트 차단)" },
+        { category: "7. 물품/약품", item: "1) 비치된 약품과 치료용 재료의 기준은 학생 수에 따라 준비" },
+        { category: "7. 물품/약품", item: "2) 해독성 약품은 잠금장치 및 주의 표시" },
+        { category: "7. 물품/약품", item: "3) 약품종류를 분류하고 일정한 장소에 보관" },
+        { category: "7. 물품/약품", item: "4) 냉장고는 적절한 온도를 유지하여 약품의 유효성을 유지" }
+      ],
+      "public": [
+        { category: "1. 현관", item: "1) 현관 바닥 매트 고정 및 걸림 유무 상태" },
+        { category: "1. 현관", item: "2) 주출입문 자동문 작동센서 및 잠금장치 상태" },
+        { category: "2. 계단/복도", item: "1) 계단 난간 고정상태 및 미끄럼 방지 논슬립 마모 상태" },
+        { category: "2. 계단/복도", item: "2) 복도 및 피난 통로 내 적치물 유무 여부" },
+        { category: "3. 화장실", item: "1) 화장실 바닥 물기 및 미끄럼 방지 타일 상태" },
+        { category: "3. 화장실", item: "2) 세면대 온수 화상 방지 밸브 작동 및 수전 고정 상태" },
+        { category: "3. 화장실", item: "3) 대소변기 칸 손끼임 방지 고무 부착 유무" }
+      ],
+      "outdoor": [
+        { category: "1. 놀이터", item: "1) 어린이 놀이기구 파손, 볼트 풀림 및 돌출 유무" },
+        { category: "1. 놀이터", item: "2) 놀이터 바닥 고무매트 파손, 틈새 벌어짐 상태 또는 모래 오염도" },
+        { category: "2. 외부 배수", item: "1) 실외 배수로 덮개 고정상태 및 토사 적치 유무" },
+        { category: "3. 울타리", item: "1) 학교 외곽 울타리 및 교문 고정, 파손 상태" }
+      ],
+      "utility": [
+        { category: "1. 소방", item: "1) 각 구역 소화기 비치 상태 및 압력 지침 정상 유무" },
+        { category: "1. 소방", item: "2) 피난구 유도등 점등 상태 및 시야 방해 요인 유무" },
+        { category: "2. 전기/기계", item: "1) EPS실, 기계실 출입문 상시 잠금 관리 상태" },
+        { category: "2. 전기/기계", item: "2) 분전반 내부 먼지 적재 유무 및 위험 경고 스티커 부착 상태" }
+      ],
+      "transit": [
+        { category: "1. 승하차", item: "1) 통학버스 전용 승하차 구역 안전 표지판 및 노면 도색 상태" },
+        { category: "2. 차량내부", item: "2) 통학버스 내부 전 좌석 안전띠 정상 작동 및 하차 확인 장치 작동 유무" },
+        { category: "2. 차량내부", item: "3) 차량 내 어린이 보호 표지판 및 소화기, 구급함 비치 상태" }
+      ],
+      "cafeteria": [
+        { category: "1. 가스/열원", item: "1) 가스 누출 차단 장치 및 연동 밸브 정상 작동 여부" },
+        { category: "2. 위생/설비", item: "2) 후드 급배기 팬 작동 상태 및 그리스 필터 청결도" },
+        { category: "2. 위생/설비", item: "3) 조리실 내 배수 트렌치 덮개 유격 및 바닥 미끄럼 방지 상태" }
+      ]
+    };
+
+    const LOCATION_NAMES = {
+      "classrooms": ["새싹반", "꽃잎반", "열매반", "하늘반", "바다반", "컴퓨터실", "도서실", "유희실"],
+      "medical": ["보건실(안정실 포함)"],
+      "public": ["중앙현관", "1층복도/계단", "2층복도/계단", "학생화장실", "교직원화장실"],
+      "outdoor": ["모래놀이터", "종합놀이공간", "실외체육장", "교문주변"],
+      "utility": ["전기기계실", "통신실/EPS", "소방보일러실"],
+      "transit": ["통학버스 1호", "통학버스 2호", "승하차장"],
+      "cafeteria": ["급식실 조리교실", "식당 대홀"]
+    };
+
+    // 전역 애플리케이션 상태 변수
+    let currentRecord = {
+      location: "",
+      locationKey: "",
+      date: "",
+      inspector: "",
+      items: [],
+      etc: ""
+    };
+
+    let allSavedRecords = [];
+    let signaturePad = null;
+    let isSigned = false;
+
+    // 로컬 스토리지 데이터 무결성 보장 로직 (단계 4 보완)
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const stored = localStorage.getItem('SCHOOL_SAFETY_RECORDS');
+        allSavedRecords = stored ? JSON.parse(stored) : [];
+        if (!Array.isArray(allSavedRecords)) {
+          allSavedRecords = [];
+        }
+      } catch (e) {
+        console.error("로컬 스토리지 파싱 오류, 초기화 진행:", e);
+        allSavedRecords = [];
+      }
+      
+      initSetupScreen();
+      initSignatureCanvas();
+      
+      // 오늘 날짜 기본 지정
+      document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
+    });
+
+    // 1단계 화면 셋업 및 드롭다운 주입
+    function initSetupScreen() {
+      const bindGroup = (targetId, key) => {
+        const wrapper = document.getElementById(targetId);
+        if (!wrapper) return;
+        wrapper.innerHTML = "";
+        LOCATION_NAMES[key].forEach(loc => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-100 transition-all truncate";
+          btn.innerText = loc;
+          btn.onclick = () => selectLocation(loc, key);
+          wrapper.appendChild(btn);
+        });
+      };
+
+      bindGroup("group-classroom", "classrooms");
+      bindGroup("group-medical", "medical");
+      bindGroup("group-public", "public");
+      bindGroup("group-outdoor", "outdoor");
+      bindGroup("group-utility", "utility");
+      bindGroup("group-transit", "transit");
+      bindGroup("group-cafeteria", "cafeteria");
+    }
+
+    function toggleLocationDropdown() {
+      const drop = document.getElementById("location-dropdown");
+      const arrow = document.getElementById("location-arrow");
+      const isHidden = drop.classList.contains("hidden");
+      
+      if (isHidden) {
+        drop.classList.remove("hidden");
+        arrow.classList.add("rotate-180");
+      } else {
+        drop.classList.add("hidden");
+        arrow.classList.remove("rotate-180");
+      }
+    }
+
+    function selectLocation(name, key) {
+      currentRecord.location = name;
+      currentRecord.locationKey = key;
+      
+      const txt = document.getElementById("selected-location-text");
+      txt.innerText = name;
+      txt.classList.remove("text-slate-500");
+      txt.classList.add("text-slate-800", "font-bold");
+      
+      document.getElementById("location-dropdown").classList.add("hidden");
+      document.getElementById("location-arrow").classList.remove("rotate-180");
+    }
+
+    // 1단계 -> 2단계: 검사 시작 검증 및 입력값 연결 포커싱 (단계 3 보완)
+    function startInspection() {
+      if (!currentRecord.location) {
+        showCustomAlert("입력 누락", "점검 위치를 드롭다운에서 선택해 주세요.");
+        document.getElementById('btn-location-select').focus();
+        return;
+      }
+      
+      const dateVal = document.getElementById("input-date").value;
+      if (!dateVal) {
+        showCustomAlert("입력 누락", "안전 점검 일자를 입력해 주세요.");
+        document.getElementById('input-date').focus();
+        return;
+      }
+      currentRecord.date = dateVal;
+
+      const inspectorVal = document.getElementById("input-inspector").value.trim();
+      if (!inspectorVal) {
+        showCustomAlert("입력 누락", "점검자 성명을 올바르게 타이핑해 주세요.");
+        document.getElementById('input-inspector').focus();
+        return;
+      }
+      currentRecord.inspector = inspectorVal;
+
+      // 체크리스트 초기 항목 빌드
+      const defaultItems = LOCATION_CHECKLISTS[currentRecord.locationKey] || [];
+      currentRecord.items = defaultItems.map((item, idx) => ({
+        id: idx,
+        category: item.category,
+        item: item.item,
+        status: "○", // 우수(○), 요구(△), 이상(X)
+        remark: ""
+      }));
+
+      // 메타 정보 텍스트 레이블 매핑
+      document.getElementById("checklist-location-title").innerText = currentRecord.location;
+      document.getElementById("checklist-date-info").innerText = `점검일: ${currentRecord.date}`;
+      document.getElementById("checklist-inspector-info").innerText = `점검자: ${currentRecord.inspector}`;
+      document.getElementById("input-etc").value = "";
+
+      renderChecklistTable();
+      changeScreen("screen-checklist");
+    }
+
+    // 2단계 테이블 렌더링
+    function renderChecklistTable() {
+      const tbody = document.getElementById("checklist-tbody");
+      tbody.innerHTML = "";
+
+      currentRecord.items.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50/80 transition-colors";
+
+        // 분야 열
+        const tdCat = document.createElement("td");
+        tdCat.className = "py-2.5 px-2 font-bold text-slate-500 text-center border-r border-slate-100 text-[11px] md:text-xs";
+        tdCat.innerText = row.category;
+
+        // 항목 열
+        const tdItem = document.createElement("td");
+        tdItem.className = "py-2.5 px-3 text-slate-700 font-medium leading-relaxed text-[11px] md:text-xs";
+        tdItem.innerText = row.item;
+
+        // 점검 내용 및 기호 변경 열 (클릭 시 순환 변경)
+        const tdStatus = document.createElement("td");
+        tdStatus.className = "py-2.5 px-2 text-center border-l border-r border-slate-100 cursor-pointer select-none";
+        
+        let statusClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+        if (row.status === "△") statusClass = "bg-amber-50 text-amber-700 border-amber-200";
+        if (row.status === "X") statusClass = "bg-red-50 text-red-700 border-red-200";
+
+        tdStatus.innerHTML = `
+          <div class="inline-flex items-center justify-center w-8 h-8 rounded-full border font-black text-sm transition-all shadow-sm ${statusClass}">
+            ${row.status}
+          </div>
+        `;
+        tdStatus.onclick = () => {
+          if (row.status === "○") row.status = "△";
+          else if (row.status === "△") row.status = "X";
+          else row.status = "○";
+          renderChecklistTable();
+        };
+
+        // 개선 조치 기술 필드
+        const tdRemark = document.createElement("td");
+        tdRemark.className = "py-2.5 px-2";
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = row.remark;
+        input.placeholder = row.status === "X" ? "필수 조치 입력" : "지정 사항 기록";
+        input.className = `w-full px-2 py-1 border rounded-lg text-xs focus:outline-none transition-all ${
+          row.status === "X" && !row.remark ? 'border-red-400 bg-red-50/30 focus:ring-1 focus:ring-red-500' : 'border-slate-300 focus:ring-1 focus:ring-emerald-500'
+        }`;
+        input.oninput = (e) => {
+          row.remark = e.target.value;
+        };
+        tdRemark.appendChild(input);
+
+        tr.appendChild(tdCat);
+        tr.appendChild(tdItem);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdRemark);
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 2단계 -> 3단계: 입력 완료 검증
+    function submitChecklist() {
+      // 이상 항목(X) 발견 시 개선 조치사항 필수 작성 여부 검증
+      const missingRemark = currentRecord.items.find(r => r.status === "X" && !r.remark.trim());
+      if (missingRemark) {
+        showCustomAlert("개선 사항 필수 입력", `[${missingRemark.category}] 분야의 이상(X) 항목에 대한 조치 예정 사항을 입력해야 결재 단계로 이동할 수 있습니다.`);
+        return;
+      }
+
+      currentRecord.etc = document.getElementById("input-etc").value;
+
+      // 3단계 결재 보고서 데이터 바인딩
+      document.getElementById("report-location").innerText = currentRecord.location;
+      document.getElementById("report-date").innerText = currentRecord.date.replace(/-/g, '.');
+      document.getElementById("report-inspector").innerText = currentRecord.inspector;
+
+      const rBody = document.getElementById("report-table-body");
+      rBody.innerHTML = "";
+
+      currentRecord.items.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.className = "divide-x divide-slate-200";
+
+        let badgeStyle = "text-emerald-600 font-bold";
+        if (row.status === "△") badgeStyle = "text-amber-600 font-bold";
+        if (row.status === "X") badgeStyle = "text-red-600 font-bold";
+
+        tr.innerHTML = `
+          <td class="py-2 px-2 text-center font-bold text-slate-500 border-r border-slate-200">${row.category}</td>
+          <td class="py-2 px-3 text-slate-700 border-r border-slate-200">${row.item}</td>
+          <td class="py-2 px-2 text-center border-r border-slate-200"><span class="${badgeStyle}">${row.status}</span></td>
+          <td class="py-2 px-3 text-slate-600">${row.remark || "-"}</td>
+        `;
+        rBody.appendChild(tr);
+      });
+
+      const reportEtc = document.getElementById("report-etc-text");
+      if (currentRecord.etc.trim()) {
+        reportEtc.innerText = currentRecord.etc;
+        reportEtc.classList.remove("italic", "text-slate-400");
+        reportEtc.classList.add("text-slate-700");
+      } else {
+        reportEtc.innerText = "특이사항이나 개선 요구안이 존재하지 않습니다.";
+        reportEtc.classList.add("italic", "text-slate-400");
+        reportEtc.classList.remove("text-slate-700");
+      }
+
+      clearSignature();
+      changeScreen("screen-signature");
+    }
+
+    // 서명 캔버스 구현 및 이미지 인쇄 연동 최적화 (단계 1 보완)
+    function initSignatureCanvas() {
+      const canvas = document.getElementById("signature-canvas");
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext("2d");
+      let drawing = false;
+
+      const resizeCanvas = () => {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        ctx.strokeStyle = "#1e293b";
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = "round";
+        isSigned = false;
+        syncSignatureToImg();
+      };
+
+      // 초기화 및 창 크기 변경 대응
+      setTimeout(resizeCanvas, 300);
+      window.addEventListener('resize', () => {
+        // 기존 서명이 지워지지 않도록 임시 저장 후 복원하거나 초기화 알림
+        const temp = canvas.toDataURL();
+        const oldSigned = isSigned;
+        resizeCanvas();
+        if (oldSigned) {
+          const img = new Image();
+          img.onload = () => { ctx.drawImage(img, 0, 0); isSigned = true; syncSignatureToImg(); };
+          img.src = temp;
+        }
+      });
+
+      // 실시간 이미지 태그 동기화 함수 (인쇄 누락 원천 해결)
+      function syncSignatureToImg() {
+        const pImg = document.getElementById("print-signature-img");
+        const placeholder = document.getElementById("signature-placeholder-text");
+        
+        if (isSigned) {
+          const dataUrl = canvas.toDataURL();
+          pImg.src = dataUrl;
+          pImg.classList.remove("hidden");
+          if(placeholder) placeholder.classList.add("hidden");
+        } else {
+          pImg.src = "";
+          pImg.classList.add("hidden");
+          if(placeholder) placeholder.classList.remove("hidden");
+        }
+      }
+
+      // 이벤트 위임 처리 (마우스 및 터치)
+      const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      };
+
+      const startDraw = (e) => {
+        drawing = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        isSigned = true;
+      };
+
+      const moveDraw = (e) => {
+        if (!drawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      };
+
+      const stopDraw = () => {
+        if(drawing) {
+          drawing = false;
+          syncSignatureToImg();
+        }
+      };
+
+      canvas.addEventListener("mousedown", startDraw);
+      canvas.addEventListener("mousemove", moveDraw);
+      window.addEventListener("mouseup", stopDraw);
+
+      canvas.addEventListener("touchstart", startDraw, { passive: false });
+      canvas.addEventListener("touchmove", moveDraw, { passive: false });
+      window.addEventListener("touchend", stopDraw);
+    }
+
+    function clearSignature() {
+      const canvas = document.getElementById("signature-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      isSigned = false;
+      
+      const pImg = document.getElementById("print-signature-img");
+      const placeholder = document.getElementById("signature-placeholder-text");
+      if (pImg) {
+        pImg.src = "";
+        pImg.classList.add("hidden");
+      }
+      if (placeholder) placeholder.classList.remove("hidden");
+    }
+
+    // 최종 데이터 제출 및 로컬 저장소 기록 통합
+    function submitFinalReport() {
+      if (!isSigned) {
+        showCustomAlert("결재 보류", "점검자 서명 칸에 마우스나 손가락으로 자필 서명을 완료해 주세요.");
+        return;
+      }
+
+      const canvas = document.getElementById("signature-canvas");
+      const signatureDataUrl = canvas.toDataURL();
+
+      // 고유 아이디 생성
+      const recordId = "REC_" + Date.now();
+      
+      const stats = { ok: 0, warn: 0, danger: 0 };
+      currentRecord.items.forEach(r => {
+        if (r.status === "○") stats.ok++;
+        if (r.status === "△") stats.warn++;
+        if (r.status === "X") stats.danger++;
+      });
+
+      const newSaveObject = {
+        id: recordId,
+        location: currentRecord.location,
+        locationKey: currentRecord.locationKey,
+        date: currentRecord.date,
+        inspector: currentRecord.inspector,
+        items: JSON.parse(JSON.stringify(currentRecord.items)),
+        etc: currentRecord.etc,
+        signature: signatureDataUrl,
+        stats: stats
+      };
+
+      allSavedRecords.push(newSaveObject);
+      localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
+
+      showCustomAlert("제출 완료", "안전점검 리포트가 성공적으로 시스템에 기록되었습니다.");
+      
+      // 입력 양식 완전 초기화 및 리셋 후 첫 화면 복귀
+      currentRecord = { location: "", locationKey: "", date: "", inspector: "", items: [], etc: "" };
+      document.getElementById("input-inspector").value = "";
+      const txt = document.getElementById("selected-location-text");
+      txt.innerText = "점검할 장소를 선택해 주세요";
+      txt.classList.add("text-slate-500");
+      txt.classList.remove("text-slate-800", "font-bold");
+      
+      changeScreen("screen-setup");
+    }
+
+
+    // ==================== [관리자 대시보드 스크립트 엔진] ====================
+    let accumulatedPassword = "";
+
+    function openAdminPasswordModal() {
+      accumulatedPassword = "";
+      document.getElementById("admin-pwd-input").value = "";
+      document.getElementById("password-modal").classList.remove("hidden");
+    }
+
+    function closeAdminPasswordModal() {
+      document.getElementById("password-modal").classList.add("hidden");
+    }
+
+    function pressKey(num) {
+      if (num === 'C') {
+        accumulatedPassword = "";
+      } else {
+        if (accumulatedPassword.length < 4) {
+          accumulatedPassword += num;
+        }
+      }
+      document.getElementById("admin-pwd-input").value = "*".repeat(accumulatedPassword.length);
+    }
+
+    function submitAdminPassword() {
+      if (accumulatedPassword === "9868") {
+        closeAdminPasswordModal();
+        enterAdminDashboard();
+      } else {
+        showCustomAlert("인증 실패", "관리자 마스터 패스워드가 일치하지 않습니다. 다시 입력하세요.");
+        accumulatedPassword = "";
+        document.getElementById("admin-pwd-input").value = "";
+      }
+    }
+
+    function enterAdminDashboard() {
+      buildMonthSelectOptions();
+      renderAdminDashboard();
+      changeScreen("admin-screen");
+    }
+
+    function exitAdminMode() {
+      changeScreen("screen-setup");
+    }
+
+    function buildMonthSelectOptions() {
+      const select = document.getElementById("admin-month-select");
+      select.innerHTML = "";
+
+      const monthsSet = new Set();
+      // 데이터 바인딩 무결성 검증 추가
+      if (Array.isArray(allSavedRecords)) {
+        allSavedRecords.forEach(r => {
+          if (r && r.date) monthsSet.add(r.date.substring(0, 7));
+        });
+      }
+
+      // 오늘 날짜 기본 달 추가
+      const curMonth = new Date().toISOString().substring(0, 7);
+      monthsSet.add(curMonth);
+
+      const sortedMonths = Array.from(monthsSet).sort((a, b) => b.localeCompare(a));
+      sortedMonths.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.innerText = `${m.split('-')[0]}년 ${m.split('-')[1]}월 현황`;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderAdminDashboard() {
+      const selectedMonth = document.getElementById("admin-month-select").value;
+      const tbody = document.getElementById("admin-table-body");
+      tbody.innerHTML = "";
+
+      const filtered = allSavedRecords.filter(r => r && r.date && r.date.startsWith(selectedMonth))
+                                      .sort((a, b) => b.date.localeCompare(a.date));
+
+      // 통계 지표 연산
+      let tCnt = filtered.length;
+      let tOk = 0, tWarn = 0, tDanger = 0;
+
+      filtered.forEach(r => {
+        if (r.stats) {
+          tOk += r.stats.ok || 0;
+          tWarn += r.stats.warn || 0;
+          tDanger += r.stats.danger || 0;
+        }
+      });
+
+      document.getElementById("stat-total-cnt").innerText = `${tCnt}건`;
+      document.getElementById("stat-ok-cnt").innerText = `${tOk}개`;
+      document.getElementById("stat-warn-cnt").innerText = `${tWarn}개`;
+      document.getElementById("stat-danger-cnt").innerText = `${tDanger}개`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-bold">해당 조건에 부합하는 안전 점검 보고서 이력이 존재하지 않습니다.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-200";
+
+        tr.innerHTML = `
+          <td class="py-3 px-3 font-semibold text-slate-700">${r.date}</td>
+          <td class="py-3 px-3 font-bold text-slate-900">${r.location}</td>
+          <td class="py-3 px-3">
+            <div class="flex gap-1.5 text-[10px] font-bold">
+              <span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-200">○:${r.stats.ok}</span>
+              <span class="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded border border-amber-200">△:${r.stats.warn}</span>
+              <span class="px-1.5 py-0.5 bg-red-50 text-red-600 rounded border border-red-200">X:${r.stats.danger}</span>
+            </div>
+          </td>
+          <td class="py-3 px-3 text-slate-800 font-semibold">${r.inspector}</td>
+          <td class="py-3 px-2 text-center">
+            <img src="${r.signature}" class="h-6 max-w-[60px] object-contain mx-auto border border-slate-200 bg-white rounded p-0.5" alt="서명 요약">
+          </td>
+          <td class="py-3 px-2 text-center">
+            <div class="flex items-center justify-center gap-1">
+              <button onclick="viewDetailReport('${r.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-2 py-1 rounded border border-indigo-200 transition-colors">조회</button>
+              <button onclick="openEditModal('${r.id}')" class="bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold px-2 py-1 rounded border border-purple-200 transition-colors">수정</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 관리자 조회용 개별 A4 결과 컴포넌트 뷰어 연동
+    function viewDetailReport(id) {
+      const record = allSavedRecords.find(r => r.id === id);
+      if (!record) return;
+
+      const container = document.getElementById("admin-report-container");
+      container.innerHTML = "";
+
+      // 템플릿 복사 및 정적 인쇄 본문 주입
+      const reportHtml = `
+        <div class="print-area border border-slate-300 rounded-xl bg-white p-6 md:p-8 relative text-xs">
+          <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
+            <div>
+              <h3 class="text-xl font-black text-slate-900 underline decoration-indigo-500 decoration-4 underline-offset-8">안전점검 결과 보고서</h3>
+              <p class="text-[9px] text-slate-400 mt-2">문서 고유 키: ${record.id}</p>
+            </div>
+            <div class="text-right text-[11px] text-slate-400">
+              <p>학교 안전점검의 날 기록대장 (관리자용 출력 양식)</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
+            <div><span class="text-slate-400 font-bold">점검 위치:</span> <strong class="text-slate-800">${record.location}</strong></div>
+            <div><span class="text-slate-400 font-bold">점검 일자:</span> <strong class="text-slate-800">${record.date.replace(/-/g, '.')}</strong></div>
+            <div><span class="text-slate-400 font-bold">점검자:</span> <strong class="text-slate-800">${record.inspector}</strong></div>
+          </div>
+
+          <table class="w-full text-left border-collapse border border-slate-300 table-fixed text-[11px]">
+            <thead>
+              <tr class="bg-slate-100 border-b border-slate-300 font-bold text-slate-700">
+                <th class="py-2 px-2 border-r border-slate-300 w-[15%] text-center">분야</th>
+                <th class="py-2 px-2 border-r border-slate-300 w-[45%]">점검 항목</th>
+                <th class="py-2 px-2 border-r border-slate-300 w-[15%] text-center">결과</th>
+                <th class="py-2 px-2 w-[25%]">개선 및 조치 정비 사항</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-300">
+              ${record.items.map(row => {
+                let color = "text-emerald-600";
+                if(row.status === "△") color = "text-amber-600";
+                if(row.status === "X") color = "text-red-600";
+                return `
+                  <tr class="divide-x divide-slate-200">
+                    <td class="py-1.5 px-2 text-center font-bold text-slate-500 bg-slate-50/50">${row.category}</td>
+                    <td class="py-1.5 px-2 text-slate-700 leading-normal">${row.item}</td>
+                    <td class="py-1.5 px-1 text-center font-black ${color}">${row.status}</td>
+                    <td class="py-1.5 px-2 text-slate-600">${row.remark || "-"}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+
+          <div class="mt-3 border border-slate-300 rounded-lg p-2.5">
+            <div class="font-bold text-slate-700 mb-0.5">종합 의견 및 기타 건의 사항</div>
+            <p class="text-slate-600 whitespace-pre-wrap">${record.etc ? record.etc : "특이사항 없음."}</p>
+          </div>
+
+          <div class="mt-4 flex flex-col items-center justify-center pt-3 border-t border-slate-200">
+            <p class="text-[11px] font-bold text-slate-700 mb-2">위의 사항에 대하여 성실하게 안전점검을 수행하였습니다.</p>
+            <div class="flex items-center gap-2">
+              <span class="text-slate-500 font-bold">점검자 자필 서명 확인:</span>
+              <div class="h-14 w-32 border border-slate-200 rounded bg-slate-50 flex items-center justify-center">
+                <img src="${record.signature}" class="max-h-full max-w-full object-contain" alt="결재 서명">
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = reportHtml;
+
+      // 삭제 액션 바인딩 처리
+      document.getElementById("btn-admin-detail-delete").onclick = () => {
+        openDeleteConfirmModal(record.id);
+      };
+
+      changeScreen("admin-detail-view");
+    }
+
+    // 관리자 전용 점검 데이터 수정 기능 모달 엔진
+    let editingRecordId = null;
+    function openEditModal(id) {
+      editingRecordId = id;
+      const record = allSavedRecords.find(r => r.id === id);
+      if (!record) return;
+
+      document.getElementById("edit-meta-location").innerText = record.location;
+      document.getElementById("edit-meta-date").innerText = record.date;
+      document.getElementById("edit-meta-inspector").innerText = record.inspector;
+      document.getElementById("edit-etc-textarea").value = record.etc || "";
+
+      const tbody = document.getElementById("edit-items-tbody");
+      tbody.innerHTML = "";
+
+      record.items.forEach((row, index) => {
+        const tr = document.createElement("tr");
+        tr.className = "divide-x divide-slate-200 hover:bg-slate-50";
+
+        // 상태값 선택 드롭다운 처리 채움
+        tr.innerHTML = `
+          <td class="py-2 px-1 text-center text-slate-500 font-semibold bg-slate-50">${row.category}</td>
+          <td class="py-2 px-2 text-slate-600">${row.item}</td>
+          <td class="py-2 px-1 text-center">
+            <select id="edit-status-${index}" class="border border-slate-300 rounded p-1 font-bold bg-white text-slate-800 focus:outline-none">
+              <option value="○" ${row.status === "○" ? "selected" : ""}>○ 우수</option>
+              <option value="△" ${row.status === "△" ? "selected" : ""}>△ 요망</option>
+              <option value="X" ${row.status === "X" ? "selected" : ""}>X 이상</option>
+            </select>
+          </td>
+          <td class="py-1 px-1">
+            <input type="text" id="edit-remark-${index}" value="${row.remark || ""}" class="w-full border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500">
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("edit-report-modal").classList.remove("hidden");
+    }
+
+    function closeEditModal() {
+      document.getElementById("edit-report-modal").classList.add("hidden");
+      editingRecordId = null;
+    }
+
+    function saveEditedReport() {
+      if(!editingRecordId) return;
+      const record = allSavedRecords.find(r => r.id === editingRecordId);
+      if (!record) return;
+
+      const stats = { ok: 0, warn: 0, danger: 0 };
+
+      // 가변 폼 데이터 순회 취합 저장
+      record.items.forEach((row, index) => {
+        const newStatus = document.getElementById(`edit-status-${index}`).value;
+        const newRemark = document.getElementById(`edit-remark-${index}`).value.trim();
+
+        row.status = newStatus;
+        row.remark = newRemark;
+
+        if (newStatus === "○") stats.ok++;
+        if (newStatus === "△") stats.warn++;
+        if (newStatus === "X") stats.danger++;
+      });
+
+      record.etc = document.getElementById("edit-etc-textarea").value;
+      record.stats = stats;
+
+      // 로컬 보관소 반영 복사
+      localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
+      
+      closeEditModal();
+      renderAdminDashboard();
+      showCustomAlert("수정 성공", "해당 안전 점검 기록 내역이 성공적으로 업데이트되었습니다.");
+    }
+
+    // 기록 완전 삭제 시스템 구현
+    let deleteTargetRecordId = null;
+    function openDeleteConfirmModal(id) {
+      deleteTargetRecordId = id;
+      document.getElementById("delete-confirm-modal").classList.remove("hidden");
+      
+      document.getElementById("btn-delete-confirm-action").onclick = () => {
+        executeDeleteRecord();
+      };
+    }
+
+    function closeDeleteModal() {
+      document.getElementById("delete-confirm-modal").classList.add("hidden");
+      deleteTargetRecordId = null;
+    }
+
+    function executeDeleteRecord() {
+      if(!deleteTargetRecordId) return;
+      
+      allSavedRecords = allSavedRecords.filter(r => r.id !== deleteTargetRecordId);
+      localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
+      
+      closeDeleteModal();
+      renderAdminDashboard();
+      changeScreen("admin-screen");
+      showCustomAlert("삭제 완료", "데이터가 데이터베이스에서 영구 소멸되었습니다.");
+    }
+
+    // 관리자 원시 백업용 구글 스프레드시트 CSV 내보내기 엔진
+    function exportToCSV() {
+      const selectedMonth = document.getElementById("admin-month-select").value;
+      const filtered = allSavedRecords.filter(r => r && r.date && r.date.startsWith(selectedMonth));
+
+      if(filtered.length === 0) {
+        showCustomAlert("다운로드 불가", "선택하신 월에는 추출할 이력 데이터가 존재하지 않습니다.");
+        return;
+      }
+
+      // 엑셀 한글 깨짐 방지용 유니코드 바이트 오더 마크(BOM) 주입 정의
+      let csvContent = "\uFEFF";
+      csvContent += "점검일자,점검장소,점검자,상태우수(○),점검요청(△),이상발견(X),종합기타사항\n";
+
+      filtered.forEach(r => {
+        const etcClean = r.etc ? r.etc.replace(/"/g, '""') : ""; 
+        csvContent += `"${r.date}","${r.location}","${r.inspector}",${r.stats.ok},${r.stats.warn},${r.stats.danger},"${etcClean}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `학교안전점검현황_${selectedMonth}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // 파일 클라이언트단 PDF 빌더 (html2pdf 패키지 완벽 구동 옵션 바인딩)
+    function saveReportAsPDF() {
+      const element = document.querySelector("#admin-report-container .print-area");
+      if(!element) {
+        showCustomAlert("오류", "리포트 컴포넌트를 탐색할 수 없습니다.");
+        return;
+      }
+      
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `안전점검보고서_${document.getElementById("admin-month-select").value}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      
+      html2pdf().set(opt).from(element).save();
+    }
+
+
+    // ==================== [공통 유틸리티 프레임워크 함수] ====================
+    function changeScreen(screenId) {
+      document.querySelectorAll(".screen-view").forEach(s => s.classList.add("hidden"));
+      const target = document.getElementById(screenId);
+      if (target) {
+        target.classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function showCustomAlert(title, message) {
+      document.getElementById('alert-title').innerText = title;
+      document.getElementById('alert-message').innerText = message;
+      document.getElementById('alert-modal').classList.remove('hidden');
+    }
+
+    function closeAlert() {
+      document.getElementById('alert-modal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
