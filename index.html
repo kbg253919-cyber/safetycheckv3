@@ -922,54 +922,77 @@
       if (placeholder) placeholder.classList.remove("hidden");
     }
 
-    // 최종 데이터 제출 및 로컬 저장소 기록 통합
-    function submitFinalReport() {
-      if (!isSigned) {
-        showCustomAlert("결재 보류", "점검자 서명 칸에 마우스나 손가락으로 자필 서명을 완료해 주세요.");
-        return;
-      }
+// 최종 데이터 제출 및 로컬 저장소 기록 통합 + 구글 스프레드시트 연동
+function submitFinalReport() {
+  if (!isSigned) {
+    showCustomAlert("결재 보류", "점검자 서명 칸에 마우스나 손가락으로 자필 서명을 완료해 주세요.");
+    return;
+  }
 
-      const canvas = document.getElementById("signature-canvas");
-      const signatureDataUrl = canvas.toDataURL();
+  const canvas = document.getElementById("signature-canvas");
+  const signatureDataUrl = canvas.toDataURL(); // 서명 이미지 추출
 
-      // 고유 아이디 생성
-      const recordId = "REC_" + Date.now();
-      
-      const stats = { ok: 0, warn: 0, danger: 0 };
-      currentRecord.items.forEach(r => {
-        if (r.status === "○") stats.ok++;
-        if (r.status === "△") stats.warn++;
-        if (r.status === "X") stats.danger++;
-      });
+  // 고유 아이디 및 통계치 연산
+  const recordId = "REC_" + Date.now();
+  const stats = { ok: 0, warn: 0, danger: 0 };
+  currentRecord.items.forEach(r => {
+    if (r.status === "○") stats.ok++;
+    if (r.status === "△") stats.warn++;
+    if (r.status === "X") stats.danger++;
+  });
 
-      const newSaveObject = {
-        id: recordId,
-        location: currentRecord.location,
-        locationKey: currentRecord.locationKey,
-        date: currentRecord.date,
-        inspector: currentRecord.inspector,
-        items: JSON.parse(JSON.stringify(currentRecord.items)),
-        etc: currentRecord.etc,
-        signature: signatureDataUrl,
-        stats: stats
-      };
+  // 1. 전송 및 저장용 종합 객체 생성
+  const newSaveObject = {
+    id: recordId,
+    location: currentRecord.location,
+    locationKey: currentRecord.locationKey,
+    date: currentRecord.date,
+    inspector: currentRecord.inspector,
+    items: JSON.parse(JSON.stringify(currentRecord.items)),
+    etc: currentRecord.etc,
+    signature: signatureDataUrl, // Base64 서명 데이터 포함
+    stats: stats
+  };
 
-      allSavedRecords.push(newSaveObject);
-      localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
+  // 기존 로컬스토리지 백업 보존
+  allSavedRecords.push(newSaveObject);
+  localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
 
-      showCustomAlert("제출 완료", "안전점검 리포트가 성공적으로 시스템에 기록되었습니다.");
-      
-      // 입력 양식 완전 초기화 및 리셋 후 첫 화면 복귀
-      currentRecord = { location: "", locationKey: "", date: "", inspector: "", items: [], etc: "" };
-      document.getElementById("input-inspector").value = "";
-      const txt = document.getElementById("selected-location-text");
-      txt.innerText = "점검할 장소를 선택해 주세요";
-      txt.classList.add("text-slate-500");
-      txt.classList.remove("text-slate-800", "font-bold");
-      
-      changeScreen("screen-setup");
-    }
+  // =================================================================
+  // 🚀 [구글 앱스 스크립트 연동부] 
+  // 발급받으신 구글 웹앱 URL 주소를 아래 따옴표 사이에 정확히 붙여넣어 주세요!
+  // =================================================================
+  const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwuVyKCh1CLGwmc5vLRO5_ooFiXXri-hyGY69aSPoKSwZP6nHxzrhKW1fMK0sVsgkuYpQ/exec";
 
+  // 화면 잠금 및 전송 상태 안내를 위한 로딩창 대용 얼럿
+  showCustomAlert("서버 전송 중", "구글 스프레드시트에 데이터를 안전하게 기록하고 있습니다. 잠시만 기다려주세요...");
+
+  // 구글 백엔드로 POST 비동기 요청 전송
+  fetch(GOOGLE_WEB_APP_URL, {
+    method: "POST",
+    mode: "no-cors", // CORS 제한 회피를 위한 모드 설정
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(newSaveObject)
+  })
+  .then(() => {
+    // 전송 완료 시 성공 안내 및 폼 초기화 후 메인화면 전환
+    showCustomAlert("제출 완료", "안전점검 리포트가 성공적으로 시스템 및 구글 스프레드시트에 기록되었습니다.");
+    
+    // 입력 양식 완전 초기화 및 리셋 후 첫 화면 복귀
+    currentRecord = { location: "", locationKey: "", date: "", inspector: "", items: [], etc: "" };
+    document.getElementById("input-inspector").value = "";
+    document.getElementById("selected-location-text").innerText = "점검할 장소를 선택해 주세요";
+    document.getElementById("selected-location-text").className = "text-slate-500";
+    clearSignature();
+    changeScreen("screen-setup");
+  })
+  .catch(error => {
+    console.error("전송 오류:", error);
+    showCustomAlert("네트워크 오류", "구글 시트 전송 중 오류가 발생했으나 브라우저 내부(로컬 저장소)에는 임시 저장되었습니다.");
+  });
+}
 
     // ==================== [관리자 대시보드 스크립트 엔진] ====================
     let accumulatedPassword = "";
