@@ -559,7 +559,6 @@
         { category: "5. 기타", item: "2) 맨홀 뚜껑 탈락, 파손 여부" },
         { category: "5. 기타", item: "3) 의자, 가로등, 표지판, 식수대 고장 또는 파손" },
         { category: "5. 기타", item: "4) 운동장 배수로 안전상태 (파손, 패임, 퇴적물의 청소상태)" }
-    
       ],
       "utility": [
         { category: "1. 소방분야", item: "1) 소화 및 감지설비 안전상태 (소화기, 소화전, 수신반, 감지기 동작 등 상태)" },
@@ -589,9 +588,9 @@
       ],
       "cafeteria": [
         { category: "1. 조리원위생", item: "1) 조리 종사자에 대한 위생교육 및 평가" },
-        { category: "1. 조리원위생", item: "1) 위생복, 위생화, 앞치마, 위생모를 착용" },
-        { category: "1. 조리원위생", item: "1) 긴손톱 및 액서사리, 향수, 매니큐어 사용  금지" },
-        { category: "1. 조리원위생", item: "1) 조리사 건강상태(감기, 설사, 상처감염관리)" },
+        { category: "1. 조리원위생", item: "2) 위생복, 위생화, 앞치마, 위생모를 착용" },
+        { category: "1. 조리원위생", item: "3) 긴손톱 및 액서사리, 향수, 매니큐어 사용  금지" },
+        { category: "1. 조리원위생", item: "4) 조리사 건강상태(감기, 설사, 상처감염관리)" },
         { category: "2. 주방기기", item: "1) 조리실, 바닥벽, 천정 등의 파손 및 위생" },
         { category: "2. 주방기기", item: "2) 조리실의 후드는 열 및 증기 배출" },
         { category: "2. 주방기기", item: "3) 고장 난 설비, 기구 유무" },
@@ -605,9 +604,9 @@
         { category: "3. 식품위생", item: "1) 위험 조리기구의 관리 상태 (가스 밸브 및 배관의 이상, 주방조명, 주방소화기, 플러그 및 콘센트 상태)" },
         { category: "3. 식품위생", item: "2) 조리 종사자들의 안전교육 실시" },
         { category: "3. 식품위생", item: "3) 영유아의 조리실 출입 통제" },
-        { category: "5. 화재", item: "1) 미사용 전기콘센트에 안전 덮개 장착 여부" },
-        { category: "5. 화재", item: "2) 화재 감지기 설치 및 작동 여부" },
-        { category: "5. 화재", item: "3) 전원점검(불필요한 전원, 콘센트 차단)" },
+        { category: "4. 화재", item: "1) 미사용 전기콘센트에 안전 덮개 장착 여부" },
+        { category: "4. 화재", item: "2) 화재 감지기 설치 및 작동 여부" },
+        { category: "4. 화재", item: "3) 전원점검(불필요한 전원, 콘센트 차단)" },
       ]
     };
 
@@ -655,22 +654,29 @@
       document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
     });
 
-    // 1단계 화면 셋업 및 드롭다운 주입
+    // 1단계 화면 셋업 및 드롭다운 항목 동적 주입 (장소명 바인딩 완벽 교정)
     function initSetupScreen() {
       const bindGroup = (targetId, key) => {
         const wrapper = document.getElementById(targetId);
         if (!wrapper) return;
         wrapper.innerHTML = "";
+    
+        // 안전한 예외 처리: 데이터 유무 체크
+        if (!LOCATION_NAMES[key] || !Array.isArray(LOCATION_NAMES[key])) return;
+
         LOCATION_NAMES[key].forEach(loc => {
           const btn = document.createElement("button");
           btn.type = "button";
-          btn.className = "text-left px-3 py-2 text-xs font-semibold rounded-lg hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-100 transition-all truncate";
+          btn.className = "w-full text-left bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 font-semibold py-2 px-3 rounded-lg text-xs transition-all duration-100 border border-slate-200/60 truncate";
           btn.innerText = loc;
-          btn.onclick = () => selectLocation(loc, key);
+          btn.onclick = () => {
+            selectLocation(loc, key);
+          };
           wrapper.appendChild(btn);
         });
       };
 
+      // 각각의 시설 카테고리에 맞춰 정밀 렌더링 진행
       bindGroup("group-classroom", "classrooms");
       bindGroup("group-medical", "medical");
       bindGroup("group-public", "public");
@@ -680,31 +686,37 @@
       bindGroup("group-cafeteria", "cafeteria");
     }
 
+    // 드롭다운 메뉴 열고 닫기 스위치
     function toggleLocationDropdown() {
-      const drop = document.getElementById("location-dropdown");
+      const dropdown = document.getElementById("location-dropdown");
       const arrow = document.getElementById("location-arrow");
-      const isHidden = drop.classList.contains("hidden");
-      
+      if (!dropdown) return;
+  
+      const isHidden = dropdown.classList.contains("hidden");
       if (isHidden) {
-        drop.classList.remove("hidden");
-        arrow.classList.add("rotate-180");
+        dropdown.classList.remove("hidden");
+        if (arrow) arrow.classList.add("rotate-180");
       } else {
-        drop.classList.add("hidden");
-        arrow.classList.remove("rotate-180");
+        dropdown.classList.add("hidden");
+        if (arrow) arrow.classList.remove("rotate-180");
       }
     }
 
-    function selectLocation(name, key) {
-      currentRecord.location = name;
-      currentRecord.locationKey = key;
-      
-      const txt = document.getElementById("selected-location-text");
-      txt.innerText = name;
-      txt.classList.remove("text-slate-500");
-      txt.classList.add("text-slate-800", "font-bold");
-      
-      document.getElementById("location-dropdown").classList.add("hidden");
-      document.getElementById("location-arrow").classList.remove("rotate-180");
+    // 사용자가 특정 장소를 최종 클릭했을 때 처리하는 바인딩 함수
+    function selectLocation(locationName, locationKey) {
+      // 전역 변수에 선택 데이터 저장
+      currentRecord.location = locationName;
+      currentRecord.locationKey = locationKey;
+
+      // 메인 인프라 레이블 변경 처리
+      const textLabel = document.getElementById("selected-location-text");
+      if (textLabel) {
+        textLabel.innerText = locationName;
+        textLabel.className = "text-slate-800 font-bold text-sm";
+      }
+
+      // 선택 완료 후 드롭다운 창 닫기
+      toggleLocationDropdown();
     }
 
     // 1단계 -> 2단계: 검사 시작 검증 및 입력값 연결 포커싱 (단계 3 보완)
