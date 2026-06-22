@@ -1506,8 +1506,7 @@ function submitFinalReport() {
         showCustomAlert("경고", "점검자 이름은 비워둘 수 없습니다.");
         return;
       }
-    }
-      
+        
       // 로컬 배열 데이터 업데이트
       const recordIndex = allSavedRecords.findIndex(r => r.id === recordId);
       if (recordIndex !== -1) {
