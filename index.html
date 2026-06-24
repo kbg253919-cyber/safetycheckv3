@@ -681,6 +681,8 @@
       
       // 오늘 날짜 기본 지정
       document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
+      document.getElementById('btn-delete-confirm-action')
+              .addEventListener('click', deleteRecord);
     });
 
     // 1단계 화면 셋업 및 드롭다운 항목 동적 주입 (장소명 바인딩 완벽 교정)
@@ -1223,7 +1225,10 @@ function submitFinalReport() {
           <td class="py-3 px-2 text-center">
             <div class="flex items-center justify-center gap-1">
               <button onclick="viewDetailReport('${r.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-2 py-1 rounded border border-indigo-200 transition-colors">조회</button>
+
               <button onclick="openEditModal('${r.id}')" class="bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold px-2 py-1 rounded border border-purple-200 transition-colors">수정</button>
+
+              <button onclick="openDeleteModal('${r.id}')" class="bg-red-50 hover:bg-red-100 text-red-700 font-bold px-2 py-1 rounded border border-red-200 transition-colors">삭제</button>
             </div>
           </td>
         `;
@@ -1484,6 +1489,42 @@ function submitFinalReport() {
       document.getElementById('alert-modal').classList.add('hidden');
     }
 
+    let deleteTargetId = null;
+
+    function openDeleteModal(id) {
+      deleteTargetId = id;
+      document.getElementById('delete-confirm-modal')
+              .classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      deleteTargetId = null;
+      document.getElementById('delete-confirm-modal')
+              .classList.add('hidden');
+    }
+
+    function deleteRecord() {
+
+      if (!deleteTargetId) return;
+
+      allSavedRecords = allSavedRecords.filter(
+        r => r.id !== deleteTargetId
+      );
+
+      localStorage.setItem(
+        'SCHOOL_SAFETY_RECORDS',
+        JSON.stringify(allSavedRecords)
+      );
+
+      closeDeleteModal();
+      renderAdminDashboard();
+
+      showCustomAlert(
+        "삭제 완료",
+        "선택한 점검 결과가 삭제되었습니다."
+      );
+    }
+    
     // ====================================================
     // [추가] 관리자 모드 - 기록 수정(Edit) 모달 제어 함수
     // ====================================================
