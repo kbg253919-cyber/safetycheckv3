@@ -52,6 +52,45 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
+    /* =========================
+       PDF 출력용
+    ========================= */
+
+    #pdf-temp-wrapper{
+
+        overflow:visible !important;
+
+    }
+
+    #pdf-temp-wrapper *{
+
+        max-height:none !important;
+
+    }
+
+    #pdf-temp-wrapper table{
+
+        width:100%;
+
+        border-collapse:collapse;
+
+    }
+
+    #pdf-temp-wrapper tr{
+
+        page-break-inside:avoid;
+
+    }
+
+    #pdf-temp-wrapper td{
+
+        page-break-inside:avoid;
+
+    }
+    .avoid-page-break{
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
@@ -1450,22 +1489,138 @@ function submitFinalReport() {
     }
 
     // 파일 클라이언트단 PDF 빌더 (html2pdf 패키지 완벽 구동 옵션 바인딩)
-    function saveReportAsPDF() {
-      const element = document.getElementById('admin-report-container');
-      if(!element) {
-        showCustomAlert("오류", "리포트 컴포넌트를 탐색할 수 없습니다.");
-        return;
-      }
-      
-      const opt = {
-        margin: [10, 10, 10, 10],
-        filename: `안전점검보고서_${document.getElementById("admin-month-select").value}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 3,  useCORS: true,  scrollX: 0,  scrollY: 0,  windowWidth: element.scrollWidth,  windowHeight: element.scrollHeight },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      
-      html2pdf().set(opt).from(element).save();
+    async function saveReportAsPDF() {
+
+        const original = document.querySelector("#admin-report-container .print-area");
+
+        if (!original) {
+            showCustomAlert("오류", "출력할 보고서를 찾을 수 없습니다.");
+            return;
+        }
+
+        // ---------- 임시 출력영역 ----------
+        const wrapper = document.createElement("div");
+
+        wrapper.id = "pdf-temp-wrapper";
+
+        wrapper.style.position = "fixed";
+        wrapper.style.left = "-10000px";
+        wrapper.style.top = "0";
+        wrapper.style.width = "210mm";
+        wrapper.style.background = "#ffffff";
+        wrapper.style.padding = "0";
+        wrapper.style.margin = "0";
+        wrapper.style.zIndex = "-1";
+
+        document.body.appendChild(wrapper);
+
+        // ---------- 보고서 복사 ----------
+        const clone = original.cloneNode(true);
+
+        clone.style.width = "190mm";
+        clone.style.margin = "0 auto";
+        clone.style.padding = "10mm";
+        clone.style.boxSizing = "border-box";
+
+        clone.style.height = "auto";
+        clone.style.maxHeight = "none";
+        clone.style.minHeight = "0";
+
+        clone.style.overflow = "visible";
+
+        wrapper.appendChild(clone);
+
+        // ---------- PDF에서는 버튼 숨김 ----------
+        clone.querySelectorAll(".no-print").forEach(el=>{
+            el.remove();
+        });
+
+        // ---------- flex를 block으로 변경 ----------
+        clone.querySelectorAll(".flex").forEach(el=>{
+
+            if(el.classList.contains("justify-between")){
+
+                el.style.display="block";
+
+            }
+
+        });
+
+        // ---------- 표 잘림 방지 ----------
+        clone.querySelectorAll("table").forEach(table=>{
+
+            table.style.pageBreakInside="auto";
+
+        });
+
+        clone.querySelectorAll("tr").forEach(tr=>{
+
+            tr.style.pageBreakInside="avoid";
+
+        });
+
+        clone.querySelectorAll("td").forEach(td=>{
+
+            td.style.pageBreakInside="avoid";
+
+        });
+
+        // ---------- PDF 저장 ----------
+        await html2pdf()
+
+            .set({
+
+                margin:0,
+
+                filename:`안전점검결과_${Date.now()}.pdf`,
+
+                image:{
+                    type:"jpeg",
+                    quality:1
+                },
+
+                html2canvas:{
+
+                    scale:3,
+
+                    useCORS:true,
+
+                    allowTaint:true,
+
+                    scrollX:0,
+
+                    scrollY:0,
+
+                    windowWidth:wrapper.scrollWidth,
+
+                    windowHeight:wrapper.scrollHeight
+
+                },
+
+                pagebreak:{
+
+                    mode:["css","legacy"]
+
+                },
+
+                jsPDF:{
+
+                    unit:"mm",
+
+                    format:"a4",
+
+                    orientation:"portrait"
+
+                }
+
+            })
+
+            .from(wrapper)
+
+            .save();
+
+        wrapper.remove();
+
     }
 
 
