@@ -143,11 +143,18 @@
 
     }
 
-.pdf-report .report-bottom{
+    .pdf-report .report-bottom{
 
-    margin-top:auto;
+        margin-top:auto;
 
-}
+    }
+    .pdf-export{
+
+        -webkit-print-color-adjust: exact;
+
+       print-color-adjust: exact;
+
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
@@ -1624,7 +1631,8 @@ function submitFinalReport() {
 
         // ---------- PDF 저장 ----------
         try{
-            await html2pdf()
+
+          await html2pdf()
 
             .set({
                 margin:0,
