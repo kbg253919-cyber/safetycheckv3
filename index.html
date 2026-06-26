@@ -28,8 +28,15 @@
         border: none !important;
       }
       .page-break {
-        page-break-after: always;
+        page-break-after: always !important;
+        break-after: page !important;
       }
+    }
+    
+    /* PDF 출력 및 합본 생성용 페이지 강제 개행 스타일 */
+    .page-break {
+      page-break-after: always !important;
+      break-after: page !important;
     }
     
     /* 캔버스 터치 스크롤 방지 및 스타일 */
@@ -73,6 +80,7 @@
 
     <main class="flex-grow p-3 md:p-6">
 
+      <!-- 1단계: 셋업 화면 -->
       <section id="screen-setup" class="screen-view flex flex-col gap-5 py-2">
         <div class="text-center my-1">
           <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1.5 rounded-full uppercase tracking-wider">Step 1. 정보 입력</span>
@@ -137,7 +145,7 @@
         </button>
       </section>
 
-
+      <!-- 2단계: 체크리스트 진행 화면 -->
       <section id="screen-checklist" class="screen-view hidden flex flex-col gap-4 py-1">
         <div class="flex justify-between items-center border-b border-slate-200 pb-3">
           <div>
@@ -169,7 +177,7 @@
               </tr>
             </thead>
             <tbody id="checklist-tbody" class="divide-y divide-slate-200 text-xs md:text-sm">
-              </tbody>
+            </tbody>
           </table>
         </div>
 
@@ -192,7 +200,7 @@
         </div>
       </section>
 
-
+      <!-- 3단계: 최종 결재 및 서명 화면 -->
       <section id="screen-signature" class="screen-view hidden flex flex-col gap-4 py-1">
         <div class="text-center my-1 no-print">
           <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1.5 rounded-full">Step 3. 최종 결재</span>
@@ -228,7 +236,7 @@
                 </tr>
               </thead>
               <tbody id="report-table-body" class="divide-y divide-slate-300">
-                </tbody>
+              </tbody>
             </table>
           </div>
 
@@ -271,7 +279,7 @@
         </div>
       </section>
 
-
+      <!-- 관리자 모드: 대시보드 화면 -->
       <section id="admin-screen" class="screen-view hidden flex flex-col gap-4 py-1">
         <div class="flex justify-between items-center border-b border-slate-200 pb-3">
           <div>
@@ -286,19 +294,24 @@
           </button>
         </div>
 
-        <div class="bg-white p-4 border border-slate-200 rounded-xl shadow-sm flex flex-col md:flex-row gap-3 justify-between items-start md:items-center">
+        <div class="bg-white p-4 border border-slate-200 rounded-xl shadow-sm flex flex-col gap-4 lg:flex-row justify-between items-start lg:items-center">
           <div class="flex flex-wrap items-center gap-2">
             <label for="admin-month-select" class="text-xs md:text-sm font-bold text-slate-600 flex items-center gap-1.5">
               <i class="fa-regular fa-calendar text-emerald-600"></i> 월별 리포트 조회:
             </label>
             <select id="admin-month-select" onchange="renderAdminDashboard()" class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 text-slate-700">
-              </select>
+            </select>
           </div>
           
-          <div class="w-full md:w-auto">
-            <button onclick="exportToCSV()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition-all">
+          <div class="w-full lg:w-auto flex flex-col sm:flex-row gap-2">
+            <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition-all">
               <i class="fa-solid fa-file-excel"></i>
-              <span>구글 스프레드시트 호환용 CSV 다운로드</span>
+              <span>CSV 다운로드</span>
+            </button>
+            <!-- 💡 새로 구현된 당월 전체 내역 묶음 PDF 파일 다운로드 버튼 -->
+            <button onclick="exportAllToPDF()" class="bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold px-3 py-2 rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition-all">
+              <i class="fa-solid fa-file-pdf"></i>
+              <span>당월 전체 PDF 다운로드 (합본)</span>
             </button>
           </div>
         </div>
@@ -335,12 +348,12 @@
               </tr>
             </thead>
             <tbody id="admin-table-body" class="divide-y divide-slate-200 text-xs font-medium text-slate-600">
-              </tbody>
+            </tbody>
           </table>
         </div>
       </section>
 
-
+      <!-- 관리자 모드: 개별 상세 내역 뷰어 -->
       <section id="admin-detail-view" class="screen-view hidden flex flex-col gap-4 py-1">
         <div class="no-print bg-slate-100 border border-slate-200 p-3 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 shadow-sm">
           <div class="flex items-center gap-2">
@@ -361,7 +374,7 @@
         </div>
 
         <div id="admin-report-container" class="bg-white">
-          </div>
+        </div>
 
         <div class="no-print flex justify-center gap-8 py-4 border-t border-slate-200 mt-1">
           <button onclick="changeScreen('admin-screen')" class="flex flex-col items-center gap-1 group text-slate-500 hover:text-indigo-600 transition-all">
@@ -386,7 +399,7 @@
     </footer>
   </div>
 
-
+  <!-- 관리자 패스워드 모달 -->
   <div id="password-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl border border-slate-100 flex flex-col gap-3">
       <div class="text-center">
@@ -415,50 +428,39 @@
     </div>
   </div>
 
-  <div id="edit-report-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 shadow-2xl border border-slate-100 max-h-[85vh] flex flex-col">
-      <div class="flex justify-between items-center border-b border-slate-200 pb-2.5 mb-3">
-        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-          <i class="fa-solid fa-pen-to-square text-purple-600"></i> 점검 기록 수정 (관리자용)
-        </h3>
-        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 text-lg" aria-label="모달 닫기"><i class="fa-solid fa-xmark"></i></button>
+  <!-- 통합 관리자 기록 수정 모달 -->
+  <div id="admin-edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
+    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 overflow-hidden border border-slate-100">
+      <div class="bg-purple-700 text-white px-5 py-4 font-bold flex justify-between items-center">
+        <span><i class="fa-solid fa-pen-to-square mr-2"></i>점검 기록 수정</span>
+        <button onclick="closeEditModal()" class="text-white/80 hover:text-white text-xl">&times;</button>
       </div>
-
-      <div class="flex-grow overflow-y-auto pr-1 space-y-3.5 text-xs">
-        <div class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100 font-medium">
-          <div><span class="text-slate-400 font-bold">위치:</span> <strong id="edit-meta-location" class="text-slate-700"></strong></div>
-          <div><span class="text-slate-400 font-bold">날짜:</span> <strong id="edit-meta-date" class="text-slate-700"></strong></div>
-          <div><span class="text-slate-400 font-bold">점검자:</span> <strong id="edit-meta-inspector" class="text-slate-700"></strong></div>
+      <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+        <input type="hidden" id="edit-record-id">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">점검자 성명</label>
+          <input type="text" id="edit-inspector" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:border-purple-600">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">체크리스트 상세 상태 수정</label>
+          <div id="edit-checklist-container" class="border p-3 rounded bg-slate-50 max-h-52 overflow-y-auto space-y-3">
+          </div>
         </div>
 
-        <div class="border border-slate-200 rounded-lg overflow-hidden max-w-full">
-          <table class="w-full text-left border-collapse text-[11px] table-fixed min-w-[500px]">
-            <thead>
-              <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                <th class="py-2 px-2 w-[15%] text-center">분야</th>
-                <th class="py-2 px-2 w-[45%]">점검 항목</th>
-                <th class="py-2 px-2 w-[20%] text-center">점검결과</th>
-                <th class="py-2 px-2 w-[20%]">개선 사항</th>
-              </tr>
-            </thead>
-            <tbody id="edit-items-tbody" class="divide-y divide-slate-200">
-              </tbody>
-          </table>
-        </div>
-
-        <div class="space-y-1.5">
-          <label for="edit-etc-textarea" class="block font-bold text-slate-700">종합 의견 및 기타사항 수정</label>
-          <textarea id="edit-etc-textarea" rows="2" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">종합 의견 및 건의사항</label>
+          <textarea id="edit-etc" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-600 resize-none"></textarea>
         </div>
       </div>
-
-      <div class="mt-4 border-t border-slate-200 pt-3 flex justify-end gap-2">
-        <button onclick="closeEditModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2 rounded-xl transition-all">취소</button>
-        <button onclick="saveEditedReport()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm">저장하기</button>
+      <div class="bg-slate-50 px-5 py-3.5 flex justify-end space-x-2 border-t border-slate-100">
+        <button onclick="closeEditModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition-colors">취소</button>
+        <button onclick="saveEditedRecord()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors">변경사항 저장</button>
       </div>
     </div>
   </div>
 
+  <!-- 삭제 확인 모달 -->
   <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-100">
       <div class="flex items-center gap-3 text-red-600 mb-2">
@@ -480,7 +482,8 @@
     </div>
   </div>
 
-  <div id="alert-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <!-- 알림 경고창 모달 -->
+  <div id="alert-modal" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl border border-slate-100">
       <div class="flex items-center gap-3 text-amber-600 mb-2">
         <i class="fa-solid fa-triangle-exclamation text-xl"></i>
@@ -495,36 +498,6 @@
     </div>
   </div>
 
-  <div id="admin-edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden no-print">
-    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden border border-slate-100">
-      <div class="bg-purple-700 text-white px-5 py-4 font-bold flex justify-between items-center">
-        <span><i class="fa-solid fa-pen-to-square mr-2"></i>점검 기록 수정</span>
-        <button onclick="closeEditModal()" class="text-white/80 hover:text-white text-xl">&times;</button>
-      </div>
-      <div class="p-5 space-y-4">
-        <input type="hidden" id="edit-record-id">
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">점검자 성명</label>
-          <input type="text" id="edit-inspector" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:border-purple-600">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">종합 의견 및 건의사항</label>
-          <div class="mb-4">
-           <label class="block text-gray-700 text-sm font-bold mb-2">체크리스트 상태 수정</label>
-           <div id="edit-checklist-container" class="border p-3 rounded bg-gray-50 max-h-60 overflow-y-auto space-y-3">
-             </div>
-         </div>
-          <textarea id="edit-etc" rows="4" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-600 resize-none"></textarea>
-        </div>
-      </div>
-      <div class="bg-slate-50 px-5 py-3.5 flex justify-end space-x-2 border-t border-slate-100">
-        <button onclick="closeEditModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition-colors">취소</button>
-        <button onclick="saveEditedRecord()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors">변경사항 저장</button>
-      </div>
-    </div>
-  </div>
-
-  
   <script>
     // [데이터 설계] - 점검 내용 목록 정의
     const LOCATION_CHECKLISTS = {
@@ -582,7 +555,7 @@
         { category: "2. 외벽", item: "3) 외부 벽돌 상태(균열, 처짐, 탈락 등)" },
         { category: "3. 놀이터", item: "1) 놀이기구 안전상태 (페인트 벗겨짐, 모서리 안전, 파손)" },
         { category: "3. 놀이터", item: "2) 「어린이놀이시설 안전관리법」에 의한 안전점검/사고보고서/결과대장 관리여부" },
-        { category: "3. 놀이터", item: "2) 부적합 시설에 대한 이용 금지조치 및 수리  이력 관리대장 작성여부" },
+        { category: "3. 놀이터", item: "2) 부적합 시설에 대한 이용 금지조치 및 수리 이력 관리대장 작성여부" },
         { category: "4. 담장", item: "1) 옹벽, 석축, 교문, 담장의 이상 유무 (균열, 처짐, 기울어짐 등)" },
         { category: "5. 기타", item: "1) CCTV안전상태(파손, 고정, 작동상태)" },
         { category: "5. 기타", item: "2) 맨홀 뚜껑 탈락, 파손 여부" },
@@ -618,24 +591,24 @@
       "cafeteria": [
         { category: "1. 조리원위생", item: "1) 조리 종사자에 대한 위생교육 및 평가" },
         { category: "1. 조리원위생", item: "2) 위생복, 위생화, 앞치마, 위생모를 착용" },
-        { category: "1. 조리원위생", item: "3) 긴손톱 및 액서사리, 향수, 매니큐어 사용  금지" },
+        { category: "1. 조리원위생", item: "3) 긴손톱 및 액서사리, 향수, 매니큐어 사용 금지" },
         { category: "1. 조리원위생", item: "4) 조리사 건강상태(감기, 설사, 상처감염관리)" },
         { category: "2. 주방기기", item: "1) 조리실, 바닥벽, 천정 등의 파손 및 위생" },
         { category: "2. 주방기기", item: "2) 조리실의 후드는 열 및 증기 배출" },
         { category: "2. 주방기기", item: "3) 고장 난 설비, 기구 유무" },
-        { category: "2. 주방기기", item: "4) 사용한 기계, 기구는 분해, 세척, 소독을  충분히 실시하여 위생적으로 관리" },
+        { category: "2. 주방기기", item: "4) 사용한 기계, 기구는 분해, 세척, 소독을 충분히 실시하여 위생적으로 관리" },
         { category: "2. 주방기기", item: "5) 칼, 도마, 장갑, 행주 사용 시 세척, 소독" },
         { category: "3. 식품위생", item: "1) 조리실 쓰레기 당일 처리 및 청결 관리" },
         { category: "3. 식품위생", item: "2) 냉장, 냉동시설의 적정용량 확보 및 온도" },
         { category: "3. 식품위생", item: "3) 가공식품의 유통기한 확인 및 제품 검수" },
         { category: "3. 식품위생", item: "4) 생채소의 세척, 소독 실시" },
         { category: "3. 식품위생", item: "5) 조리 후 오염방지를 위한 조치" },
-        { category: "3. 식품위생", item: "1) 위험 조리기구의 관리 상태 (가스 밸브 및 배관의 이상, 주방조명, 주방소화기, 플러그 및 콘센트 상태)" },
-        { category: "3. 식품위생", item: "2) 조리 종사자들의 안전교육 실시" },
-        { category: "3. 식품위생", item: "3) 영유아의 조리실 출입 통제" },
+        { category: "3. 식품위생", item: "6) 위험 조리기구의 관리 상태 (가스 밸브 및 배관의 이상, 주방조명, 주방소화기, 플러그 및 콘센트 상태)" },
+        { category: "3. 식품위생", item: "7) 조리 종사자들의 안전교육 실시" },
+        { category: "3. 식품위생", item: "8) 영유아의 조리실 출입 통제" },
         { category: "4. 화재", item: "1) 미사용 전기콘센트에 안전 덮개 장착 여부" },
         { category: "4. 화재", item: "2) 화재 감지기 설치 및 작동 여부" },
-        { category: "4. 화재", item: "3) 전원점검(불필요한 전원, 콘센트 차단)" },
+        { category: "4. 화재", item: "3) 전원점검(불필요한 전원, 콘센트 차단)" }
       ]
     };
 
@@ -662,8 +635,9 @@
     let allSavedRecords = [];
     let signaturePad = null;
     let isSigned = false;
+    let deleteTargetId = null; // 전역 삭제 대상 ID
 
-    // 로컬 스토리지 데이터 무결성 보장 로직 (단계 4 보완)
+    // 로컬 스토리지 데이터 무결성 보장 로직
     window.addEventListener('DOMContentLoaded', () => {
       try {
         const stored = localStorage.getItem('SCHOOL_SAFETY_RECORDS');
@@ -681,18 +655,16 @@
       
       // 오늘 날짜 기본 지정
       document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
-      document.getElementById('btn-delete-confirm-action')
-              .addEventListener('click', deleteRecord);
+      document.getElementById('btn-delete-confirm-action').addEventListener('click', deleteRecord);
     });
 
-    // 1단계 화면 셋업 및 드롭다운 항목 동적 주입 (장소명 바인딩 완벽 교정)
+    // 1단계 화면 셋업 및 드롭다운 항목 동적 주입
     function initSetupScreen() {
       const bindGroup = (targetId, key) => {
         const wrapper = document.getElementById(targetId);
         if (!wrapper) return;
         wrapper.innerHTML = "";
     
-        // 안전한 예외 처리: 데이터 유무 체크
         if (!LOCATION_NAMES[key] || !Array.isArray(LOCATION_NAMES[key])) return;
 
         LOCATION_NAMES[key].forEach(loc => {
@@ -707,7 +679,6 @@
         });
       };
 
-      // 각각의 시설 카테고리에 맞춰 정밀 렌더링 진행
       bindGroup("group-classroom", "classrooms");
       bindGroup("group-medical", "medical");
       bindGroup("group-public", "public");
@@ -733,24 +704,21 @@
       }
     }
 
-    // 사용자가 특정 장소를 최종 클릭했을 때 처리하는 바인딩 함수
+    // 사용자가 특정 장소를 선택했을 때 처리
     function selectLocation(locationName, locationKey) {
-      // 전역 변수에 선택 데이터 저장
       currentRecord.location = locationName;
       currentRecord.locationKey = locationKey;
 
-      // 메인 인프라 레이블 변경 처리
       const textLabel = document.getElementById("selected-location-text");
       if (textLabel) {
         textLabel.innerText = locationName;
         textLabel.className = "text-slate-800 font-bold text-sm";
       }
 
-      // 선택 완료 후 드롭다운 창 닫기
       toggleLocationDropdown();
     }
 
-    // 1단계 -> 2단계: 검사 시작 검증 및 입력값 연결 포커싱 (단계 3 보완)
+    // 1단계 -> 2단계: 검사 시작 검증 및 입력값 연결
     function startInspection() {
       if (!currentRecord.location) {
         showCustomAlert("입력 누락", "점검 위치를 드롭다운에서 선택해 주세요.");
@@ -768,7 +736,7 @@
 
       const inspectorVal = document.getElementById("input-inspector").value.trim();
       if (!inspectorVal) {
-        showCustomAlert("입력 누락", "점검자 성명을 올바르게 타이핑해 주세요.");
+        showCustomAlert("입력 누락", "점검자 성명을 입력해 주세요.");
         document.getElementById('input-inspector').focus();
         return;
       }
@@ -780,11 +748,10 @@
         id: idx,
         category: item.category,
         item: item.item,
-        status: "○", // 우수(○), 요구(△), 이상(X)
+        status: "○", 
         remark: ""
       }));
 
-      // 메타 정보 텍스트 레이블 매핑
       document.getElementById("checklist-location-title").innerText = currentRecord.location;
       document.getElementById("checklist-date-info").innerText = `점검일: ${currentRecord.date}`;
       document.getElementById("checklist-inspector-info").innerText = `점검자: ${currentRecord.inspector}`;
@@ -803,17 +770,14 @@
         const tr = document.createElement("tr");
         tr.className = "hover:bg-slate-50/80 transition-colors";
 
-        // 분야 열
         const tdCat = document.createElement("td");
         tdCat.className = "py-2.5 px-2 font-bold text-slate-500 text-center border-r border-slate-100 text-[11px] md:text-xs";
         tdCat.innerText = row.category;
 
-        // 항목 열
         const tdItem = document.createElement("td");
         tdItem.className = "py-2.5 px-3 text-slate-700 font-medium leading-relaxed text-[11px] md:text-xs";
         tdItem.innerText = row.item;
 
-        // 점검 내용 및 기호 변경 열 (클릭 시 순환 변경)
         const tdStatus = document.createElement("td");
         tdStatus.className = "py-2.5 px-2 text-center border-l border-r border-slate-100 cursor-pointer select-none";
         
@@ -833,7 +797,6 @@
           renderChecklistTable();
         };
 
-        // 개선 조치 기술 필드
         const tdRemark = document.createElement("td");
         tdRemark.className = "py-2.5 px-2";
         const input = document.createElement("input");
@@ -858,16 +821,14 @@
 
     // 2단계 -> 3단계: 입력 완료 검증
     function submitChecklist() {
-      // 이상 항목(X) 발견 시 개선 조치사항 필수 작성 여부 검증
       const missingRemark = currentRecord.items.find(r => r.status === "X" && !r.remark.trim());
       if (missingRemark) {
-        showCustomAlert("개선 사항 필수 입력", `[${missingRemark.category}] 분야의 이상(X) 항목에 대한 조치 예정 사항을 입력해야 결재 단계로 이동할 수 있습니다.`);
+        showCustomAlert("개선 사항 필수 입력", `[${missingRemark.category}] 분야의 이상(X) 항목에 대한 조치 사항을 입력해주세요.`);
         return;
       }
 
       currentRecord.etc = document.getElementById("input-etc").value;
 
-      // 3단계 결재 보고서 데이터 바인딩
       document.getElementById("report-location").innerText = currentRecord.location;
       document.getElementById("report-date").innerText = currentRecord.date.replace(/-/g, '.');
       document.getElementById("report-inspector").innerText = currentRecord.inspector;
@@ -907,7 +868,7 @@
       changeScreen("screen-signature");
     }
 
-   // 서명 캔버스 구현 및 이미지 인쇄 연동 최적화 (스마트폰 터치 & 마우스 먹통 완벽 해결)
+    // 서명 캔버스 관리 및 초기화
     function initSignatureCanvas() {
       const canvas = document.getElementById("signature-canvas");
       if (!canvas) return;
@@ -915,21 +876,18 @@
       const ctx = canvas.getContext("2d");
       let drawing = false;
 
-      // 💡 캔버스 크기를 부모 박스에 맞추고 선 스타일을 초기화하는 함수
       const resizeCanvas = () => {
         const rect = canvas.getBoundingClientRect();
-        // 부모 요소 크기가 0일 경우를 대비해 기본값 지정
         canvas.width = rect.width || 400;
         canvas.height = rect.height || 150;
         
-        ctx.strokeStyle = "#000000"; // 선 색상 검은색
-        ctx.lineWidth = 3;           // 선 굵기
-        ctx.lineCap = "round";       // 부드러운 마감 처리
+        ctx.strokeStyle = "#000000"; 
+        ctx.lineWidth = 3;           
+        ctx.lineCap = "round";       
         
         syncSignatureToImg();
       };
 
-      // 화면 크기가 바뀔 때 기존 서명이 지워지지 않도록 복원하는 로직
       window.addEventListener('resize', () => {
         if (!isSigned) {
           resizeCanvas();
@@ -946,7 +904,6 @@
         }
       });
 
-      // 실시간 이미지 태그 동기화 함수 (인쇄 누락 원천 해결)
       function syncSignatureToImg() {
         const pImg = document.getElementById("print-signature-img");
         const placeholder = document.getElementById("signature-placeholder-text");
@@ -967,7 +924,6 @@
         }
       }
 
-      // 💡 마우스와 터치의 정확한 좌표를 계산해주는 핵심 함수
       const getPos = (e) => {
         const rect = canvas.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -982,7 +938,6 @@
         ctx.moveTo(pos.x, pos.y);
         isSigned = true;
         
-        // 모바일에서 서명 시 화면이 아래위로 출렁이며 스크롤되는 현상 방지
         if (e.type === 'touchstart') e.preventDefault();
       };
 
@@ -1002,17 +957,14 @@
         }
       };
 
-      // 1. PC 마우스 이벤트 연결
       canvas.addEventListener("mousedown", startDraw);
       canvas.addEventListener("mousemove", moveDraw);
       window.addEventListener("mouseup", stopDraw);
 
-      // 2. 스마트폰 및 태블릿 터치 이벤트 연결
       canvas.addEventListener("touchstart", startDraw, { passive: false });
       canvas.addEventListener("touchmove", moveDraw, { passive: false });
       window.addEventListener("touchend", stopDraw);
 
-      // 3. 서명 화면이 나타나는 타이밍에 맞춰 안전하게 크기 계산 (마지막 조치 사항 반영)
       setTimeout(resizeCanvas, 250);
     }
 
@@ -1032,79 +984,70 @@
       if (placeholder) placeholder.classList.remove("hidden");
     }
 
-// 최종 데이터 제출 및 로컬 저장소 기록 통합 + 구글 스프레드시트 연동
-function submitFinalReport() {
-  if (!isSigned) {
-    showCustomAlert("결재 보류", "점검자 서명 칸에 마우스나 손가락으로 자필 서명을 완료해 주세요.");
-    return;
-  }
+    // 최종 데이터 제출 및 구글 시트 전송
+    function submitFinalReport() {
+      if (!isSigned) {
+        showCustomAlert("결재 보류", "점검자 서명 칸에 자필 서명을 완료해 주세요.");
+        return;
+      }
 
-  const canvas = document.getElementById("signature-canvas");
-  const signatureDataUrl = canvas.toDataURL(); // 서명 이미지 추출
+      const canvas = document.getElementById("signature-canvas");
+      const signatureDataUrl = canvas.toDataURL(); 
 
-  // 고유 아이디 및 통계치 연산
-  const recordId = "REC_" + Date.now();
-  const stats = { ok: 0, warn: 0, danger: 0 };
-  currentRecord.items.forEach(r => {
-    if (r.status === "○") stats.ok++;
-    if (r.status === "△") stats.warn++;
-    if (r.status === "X") stats.danger++;
-  });
+      const recordId = "REC_" + Date.now();
+      const stats = { ok: 0, warn: 0, danger: 0 };
+      currentRecord.items.forEach(r => {
+        if (r.status === "○") stats.ok++;
+        if (r.status === "△") stats.warn++;
+        if (r.status === "X") stats.danger++;
+      });
 
-  // 1. 전송 및 저장용 종합 객체 생성
-  const newSaveObject = {
-    id: recordId,
-    location: currentRecord.location,
-    locationKey: currentRecord.locationKey,
-    date: currentRecord.date,
-    inspector: currentRecord.inspector,
-    items: JSON.parse(JSON.stringify(currentRecord.items)),
-    etc: currentRecord.etc,
-    signature: signatureDataUrl, // Base64 서명 데이터 포함
-    stats: stats
-  };
+      const newSaveObject = {
+        id: recordId,
+        location: currentRecord.location,
+        locationKey: currentRecord.locationKey,
+        date: currentRecord.date,
+        inspector: currentRecord.inspector,
+        items: JSON.parse(JSON.stringify(currentRecord.items)),
+        etc: currentRecord.etc,
+        signature: signatureDataUrl, 
+        stats: stats
+      };
 
-  // 기존 로컬스토리지 백업 보존
-  allSavedRecords.push(newSaveObject);
-  localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
+      allSavedRecords.push(newSaveObject);
+      localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
 
-  // =================================================================
-  // 🚀 [구글 앱스 스크립트 연동부] 
-  // 발급받으신 구글 웹앱 URL 주소를 아래 따옴표 사이에 정확히 붙여넣어 주세요!
-  // =================================================================
-  const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwuVyKCh1CLGwmc5vLRO5_ooFiXXri-hyGY69aSPoKSwZP6nHxzrhKW1fMK0sVsgkuYpQ/exec";
+      // 구글 웹앱 연동 URL
+      const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwuVyKCh1CLGwmc5vLRO5_ooFiXXri-hyGY69aSPoKSwZP6nHxzrhKW1fMK0sVsgkuYpQ/exec";
 
-  // 화면 잠금 및 전송 상태 안내를 위한 로딩창 대용 얼럿
-  showCustomAlert("서버 전송 중", "구글 스프레드시트에 데이터를 안전하게 기록하고 있습니다. 잠시만 기다려주세요...");
+      showCustomAlert("서버 전송 중", "구글 스프레드시트에 데이터를 기록하고 있습니다. 잠시만 기다려주세요...");
 
-  // 구글 백엔드로 POST 비동기 요청 전송
-  fetch(GOOGLE_WEB_APP_URL, {
-    method: "POST",
-    mode: "no-cors", // CORS 제한 회피를 위한 모드 설정
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(newSaveObject)
-  })
-  .then(() => {
-    // 전송 완료 시 성공 안내 및 폼 초기화 후 메인화면 전환
-    showCustomAlert("제출 완료", "안전점검 리포트가 성공적으로 시스템 및 구글 스프레드시트에 기록되었습니다.");
-    
-    // 입력 양식 완전 초기화 및 리셋 후 첫 화면 복귀
-    currentRecord = { location: "", locationKey: "", date: "", inspector: "", items: [], etc: "" };
-    document.getElementById("input-inspector").value = "";
-    document.getElementById("selected-location-text").innerText = "점검할 장소를 선택해 주세요";
-    document.getElementById("selected-location-text").className = "text-slate-500";
-    clearSignature();
-    changeScreen("screen-setup");
-  })
-  .catch(error => {
-    console.error("전송 오류:", error);
-    showCustomAlert("네트워크 오류", "구글 시트 전송 중 오류가 발생했으나 브라우저 내부(로컬 저장소)에는 임시 저장되었습니다.");
-  });
-}
+      fetch(GOOGLE_WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors", 
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newSaveObject)
+      })
+      .then(() => {
+        showCustomAlert("제출 완료", "안전점검 리포트가 성공적으로 저장 및 전송되었습니다.");
+        
+        // 폼 초기화 및 셋업 화면으로 이동
+        currentRecord = { location: "", locationKey: "", date: "", inspector: "", items: [], etc: "" };
+        document.getElementById("input-inspector").value = "";
+        document.getElementById("selected-location-text").innerText = "점검할 장소를 선택해 주세요";
+        document.getElementById("selected-location-text").className = "text-slate-500";
+        clearSignature();
+        changeScreen("screen-setup");
+      })
+      .catch(error => {
+        console.error("전송 오류:", error);
+        showCustomAlert("네트워크 오류", "구글 시트 전송 중 오류가 발생했으나 로컬 브라우저 저장소에는 임시 저장되었습니다.");
+      });
+    }
 
-    // ==================== [관리자 대시보드 스크립트 엔진] ====================
+    // ==================== [관리자 대시보드 스크립트] ====================
     let accumulatedPassword = "";
 
     function openAdminPasswordModal() {
@@ -1133,7 +1076,7 @@ function submitFinalReport() {
         closeAdminPasswordModal();
         enterAdminDashboard();
       } else {
-        showCustomAlert("인증 실패", "관리자 마스터 패스워드가 일치하지 않습니다. 다시 입력하세요.");
+        showCustomAlert("인증 실패", "관리자 마스터 패스워드가 일치하지 않습니다.");
         accumulatedPassword = "";
         document.getElementById("admin-pwd-input").value = "";
       }
@@ -1154,14 +1097,12 @@ function submitFinalReport() {
       select.innerHTML = "";
 
       const monthsSet = new Set();
-      // 데이터 바인딩 무결성 검증 추가
       if (Array.isArray(allSavedRecords)) {
         allSavedRecords.forEach(r => {
           if (r && r.date) monthsSet.add(r.date.substring(0, 7));
         });
       }
 
-      // 오늘 날짜 기본 달 추가
       const curMonth = new Date().toISOString().substring(0, 7);
       monthsSet.add(curMonth);
 
@@ -1182,7 +1123,6 @@ function submitFinalReport() {
       const filtered = allSavedRecords.filter(r => r && r.date && r.date.startsWith(selectedMonth))
                                       .sort((a, b) => b.date.localeCompare(a.date));
 
-      // 통계 지표 연산
       let tCnt = filtered.length;
       let tOk = 0, tWarn = 0, tDanger = 0;
 
@@ -1200,7 +1140,7 @@ function submitFinalReport() {
       document.getElementById("stat-danger-cnt").innerText = `${tDanger}개`;
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-bold">해당 조건에 부합하는 안전 점검 보고서 이력이 존재하지 않습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-bold">해당 월에 기록된 안전 점검 보고서가 존재하지 않습니다.</td></tr>`;
         return;
       }
 
@@ -1213,9 +1153,9 @@ function submitFinalReport() {
           <td class="py-3 px-3 font-bold text-slate-900">${r.location}</td>
           <td class="py-3 px-3">
             <div class="flex gap-1.5 text-[10px] font-bold">
-              <span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-200">○:${r.stats.ok}</span>
-              <span class="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded border border-amber-200">△:${r.stats.warn}</span>
-              <span class="px-1.5 py-0.5 bg-red-50 text-red-600 rounded border border-red-200">X:${r.stats.danger}</span>
+              <span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-200">○:${r.stats?.ok || 0}</span>
+              <span class="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded border border-amber-200">△:${r.stats?.warn || 0}</span>
+              <span class="px-1.5 py-0.5 bg-red-50 text-red-600 rounded border border-red-200">X:${r.stats?.danger || 0}</span>
             </div>
           </td>
           <td class="py-3 px-3 text-slate-800 font-semibold">${r.inspector}</td>
@@ -1225,9 +1165,7 @@ function submitFinalReport() {
           <td class="py-3 px-2 text-center">
             <div class="flex items-center justify-center gap-1">
               <button onclick="viewDetailReport('${r.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-2 py-1 rounded border border-indigo-200 transition-colors">조회</button>
-
               <button onclick="openEditModal('${r.id}')" class="bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold px-2 py-1 rounded border border-purple-200 transition-colors">수정</button>
-
               <button onclick="openDeleteModal('${r.id}')" class="bg-red-50 hover:bg-red-100 text-red-700 font-bold px-2 py-1 rounded border border-red-200 transition-colors">삭제</button>
             </div>
           </td>
@@ -1236,7 +1174,7 @@ function submitFinalReport() {
       });
     }
 
-    // 관리자 조회용 개별 A4 결과 컴포넌트 뷰어 연동
+    // 관리자 조회용 개별 A4 결과 컴포넌트 뷰어
     function viewDetailReport(id) {
       const record = allSavedRecords.find(r => r.id === id);
       if (!record) return;
@@ -1244,7 +1182,6 @@ function submitFinalReport() {
       const container = document.getElementById("admin-report-container");
       container.innerHTML = "";
 
-      // 템플릿 복사 및 정적 인쇄 본문 주입
       const reportHtml = `
         <div class="print-area border border-slate-300 rounded-xl bg-white p-6 md:p-8 relative text-xs">
           <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
@@ -1308,135 +1245,265 @@ function submitFinalReport() {
 
       container.innerHTML = reportHtml;
 
-      // 삭제 액션 바인딩 처리
       document.getElementById("btn-admin-detail-delete").onclick = () => {
-        openDeleteConfirmModal(record.id);
+        openDeleteModal(record.id);
       };
 
       changeScreen("admin-detail-view");
     }
 
-    // 관리자 전용 점검 데이터 수정 기능 모달 엔진
-    let editingRecordId = null;
-    function openEditModal(id) {
-      editingRecordId = id;
-      const record = allSavedRecords.find(r => r.id === id);
-      if (!record) return;
+    // 💡 [핵심 구현] 관리자용 전체 점검 결과 "묶음 PDF 다운로드" 엔진
+    function exportAllToPDF() {
+      const selectedMonth = document.getElementById("admin-month-select").value;
+      const filtered = allSavedRecords.filter(r => r && r.date && r.date.startsWith(selectedMonth))
+                                      .sort((a, b) => b.date.localeCompare(a.date));
 
-      document.getElementById("edit-meta-location").innerText = record.location;
-      document.getElementById("edit-meta-date").innerText = record.date;
-      document.getElementById("edit-meta-inspector").innerText = record.inspector;
-      document.getElementById("edit-etc-textarea").value = record.etc || "";
+      if (filtered.length === 0) {
+        showCustomAlert("다운로드 불가", "선택하신 월에 저장된 이력이 없습니다.");
+        return;
+      }
 
-      const tbody = document.getElementById("edit-items-tbody");
-      tbody.innerHTML = "";
+      // 화면에는 보이지 않는 가상의 임시 컨테이너 생성
+      const tempDiv = document.createElement("div");
+      tempDiv.style.position = "absolute";
+      tempDiv.style.left = "-9999px";
+      tempDiv.style.top = "-9999px";
+      tempDiv.style.width = "790px"; // A4 비율에 대응하는 일정한 너비 확보
+      document.body.appendChild(tempDiv);
 
-      record.items.forEach((row, index) => {
-        const tr = document.createElement("tr");
-        tr.className = "divide-x divide-slate-200 hover:bg-slate-50";
+      let compositeHtml = "";
 
-        // 상태값 선택 드롭다운 처리 채움
-        tr.innerHTML = `
-          <td class="py-2 px-1 text-center text-slate-500 font-semibold bg-slate-50">${row.category}</td>
-          <td class="py-2 px-2 text-slate-600">${row.item}</td>
-          <td class="py-2 px-1 text-center">
-            <select id="edit-status-${index}" class="border border-slate-300 rounded p-1 font-bold bg-white text-slate-800 focus:outline-none">
-              <option value="○" ${row.status === "○" ? "selected" : ""}>○ 우수</option>
-              <option value="△" ${row.status === "△" ? "selected" : ""}>△ 요망</option>
-              <option value="X" ${row.status === "X" ? "selected" : ""}>X 이상</option>
-            </select>
-          </td>
-          <td class="py-1 px-1">
-            <input type="text" id="edit-remark-${index}" value="${row.remark || ""}" class="w-full border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500">
-          </td>
+      // 각 보고서를 순회하며 A4 템플릿 코드 제작 후 병합
+      filtered.forEach((record, index) => {
+        const isLast = index === filtered.length - 1;
+        // 각 보고서 뒤에 'page-break' 클래스를 붙여 PDF 생성 시 페이지가 넘어가도록 처리
+        compositeHtml += `
+          <div class="print-area border border-slate-300 rounded-xl bg-white p-8 mb-8 relative text-xs ${!isLast ? 'page-break' : ''}" style="page-break-after: always; break-after: page;">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
+              <div>
+                <h3 class="text-xl font-black text-slate-900 underline decoration-indigo-500 decoration-4 underline-offset-8">안전점검 결과 보고서</h3>
+                <p class="text-[9px] text-slate-400 mt-2">문서 고유 키: ${record.id}</p>
+              </div>
+              <div class="text-right text-[11px] text-slate-400">
+                <p>학교 안전점검의 날 기록대장 (종합 결과 보고)</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-100 mb-4">
+              <div><span class="text-slate-400 font-bold">점검 위치:</span> <strong class="text-slate-800">${record.location}</strong></div>
+              <div><span class="text-slate-400 font-bold">점검 일자:</span> <strong class="text-slate-800">${record.date.replace(/-/g, '.')}</strong></div>
+              <div><span class="text-slate-400 font-bold">점검자:</span> <strong class="text-slate-800">${record.inspector}</strong></div>
+            </div>
+
+            <table class="w-full text-left border-collapse border border-slate-300 table-fixed text-[11px]">
+              <thead>
+                <tr class="bg-slate-100 border-b border-slate-300 font-bold text-slate-700">
+                  <th class="py-2 px-2 border-r border-slate-300 w-[15%] text-center">분야</th>
+                  <th class="py-2 px-2 border-r border-slate-300 w-[45%]">점검 항목</th>
+                  <th class="py-2 px-2 border-r border-slate-300 w-[15%] text-center">결과</th>
+                  <th class="py-2 px-2 w-[25%]">개선 및 조치 정비 사항</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-300">
+                ${record.items.map(row => {
+                  let color = "text-emerald-600";
+                  if(row.status === "△") color = "text-amber-600";
+                  if(row.status === "X") color = "text-red-600";
+                  return `
+                    <tr class="divide-x divide-slate-200">
+                      <td class="py-1.5 px-2 text-center font-bold text-slate-500 bg-slate-50/50">${row.category}</td>
+                      <td class="py-1.5 px-2 text-slate-700 leading-normal">${row.item}</td>
+                      <td class="py-1.5 px-1 text-center font-black ${color}">${row.status}</td>
+                      <td class="py-1.5 px-2 text-slate-600">${row.remark || "-"}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+
+            <div class="mt-3 border border-slate-300 rounded-lg p-2.5">
+              <div class="font-bold text-slate-700 mb-0.5">종합 의견 및 기타 건의 사항</div>
+              <p class="text-slate-600 whitespace-pre-wrap">${record.etc ? record.etc : "특이사항 없음."}</p>
+            </div>
+
+            <div class="mt-4 flex flex-col items-center justify-center pt-3 border-t border-slate-200">
+              <p class="text-[11px] font-bold text-slate-700 mb-2">위의 사항에 대하여 성실하게 안전점검을 수행하였습니다.</p>
+              <div class="flex items-center gap-2">
+                <span class="text-slate-500 font-bold">점검자 자필 서명 확인:</span>
+                <div class="h-14 w-32 border border-slate-200 rounded bg-slate-50 flex items-center justify-center">
+                  <img src="${record.signature}" class="max-h-full max-w-full object-contain" alt="결재 서명">
+                </div>
+              </div>
+            </div>
+          </div>
         `;
-        tbody.appendChild(tr);
       });
 
-      document.getElementById("edit-report-modal").classList.remove("hidden");
+      tempDiv.innerHTML = compositeHtml;
+
+      // html2pdf 생성 및 내려받기 구성 옵션
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `학교안전점검_종합보고서_${selectedMonth}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] } // 강제 페이지 나눔 클래스 매칭
+      };
+
+      // 다량의 이미지 동기화 처리를 위한 대기 로직 포함 실행
+      showCustomAlert("PDF 병합 중", "보고서 데이터와 서명을 묶는 중입니다. 문서량에 따라 3~5초 정도 소요될 수 있습니다.");
+      
+      html2pdf().set(opt).from(tempDiv).save().then(() => {
+        // 임시 돔 삭제 및 완료 알림
+        document.body.removeChild(tempDiv);
+        closeAlert();
+      }).catch(err => {
+        console.error(err);
+        document.body.removeChild(tempDiv);
+        showCustomAlert("오류 발생", "합본 PDF 파일을 빌드하는 중에 문제가 발생했습니다.");
+      });
+    }
+
+    // 관리자 점검 기록 수정 통합 기능 (모달 열기)
+    function openEditModal(recordId) {
+      const record = allSavedRecords.find(r => r.id === recordId);
+      if (!record) {
+        showCustomAlert("오류", "해당 점검 기록을 찾을 수 없습니다.");
+        return;
+      }
+
+      document.getElementById("edit-record-id").value = record.id;
+      document.getElementById("edit-inspector").value = record.inspector;
+      document.getElementById("edit-etc").value = record.etc || "";
+
+      const container = document.getElementById("edit-checklist-container");
+      container.innerHTML = ""; 
+
+      if (record.items && record.items.length > 0) {
+        record.items.forEach((row, index) => {
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "p-2 bg-white rounded shadow-sm border text-xs";
+          itemDiv.innerHTML = `
+            <p class="font-bold text-gray-800 mb-1">${row.category} - <span class="text-gray-500 font-medium">${row.item}</span></p>
+            <div class="flex items-center gap-4 mt-1.5">
+              <label class="inline-flex items-center gap-1 cursor-pointer font-bold">
+                <input type="radio" name="edit-status-${index}" value="○" ${row.status === '○' ? 'checked' : ''} class="mr-1 text-emerald-600"> ○ (우수)
+              </label>
+              <label class="inline-flex items-center gap-1 cursor-pointer font-bold">
+                <input type="radio" name="edit-status-${index}" value="△" ${row.status === '△' ? 'checked' : ''} class="mr-1 text-amber-500"> △ (요청)
+              </label>
+              <label class="inline-flex items-center gap-1 cursor-pointer font-bold">
+                <input type="radio" name="edit-status-${index}" value="X" ${row.status === 'X' ? 'checked' : ''} class="mr-1 text-red-500"> X (이상)
+              </label>
+              <input type="text" id="edit-remark-${index}" value="${row.remark || ''}" placeholder="개선 사항 조치 예정 기록" class="border rounded px-2 py-0.5 text-[11px] flex-grow focus:outline-none focus:ring-1 focus:ring-purple-600 ml-2">
+            </div>
+          `;
+          container.appendChild(itemDiv);
+        });
+      } else {
+        container.innerHTML = "<p class='text-gray-500 text-xs text-center py-2'>저장된 체크리스트 상세 항목이 없습니다.</p>";
+      }
+
+      const editModal = document.getElementById("admin-edit-modal");
+      if (editModal) {
+        editModal.classList.remove("hidden");
+      }
     }
 
     function closeEditModal() {
-      document.getElementById("edit-report-modal").classList.add("hidden");
-      editingRecordId = null;
+      const editModal = document.getElementById("admin-edit-modal");
+      if (editModal) {
+        editModal.classList.add("hidden");
+      }
     }
 
-    function saveEditedReport() {
-      if(!editingRecordId) return;
-      const record = allSavedRecords.find(r => r.id === editingRecordId);
-      if (!record) return;
+    // 수정 완료 내용 로컬 스토리지 데이터 업데이트 저장
+    function saveEditedRecord() {
+      const recordId = document.getElementById("edit-record-id").value;
+      const newInspector = document.getElementById("edit-inspector").value;
+      const newEtc = document.getElementById("edit-etc").value;
 
-      const stats = { ok: 0, warn: 0, danger: 0 };
+      if (!newInspector.trim()) {
+        showCustomAlert("경고", "점검자 이름은 필수 항목입니다.");
+        return;
+      }
+        
+      const recordIndex = allSavedRecords.findIndex(r => r.id === recordId);
+      if (recordIndex !== -1) {
+        const record = allSavedRecords[recordIndex];
+        record.inspector = newInspector;
+        record.etc = newEtc;
 
-      // 가변 폼 데이터 순회 취합 저장
-      record.items.forEach((row, index) => {
-        const newStatus = document.getElementById(`edit-status-${index}`).value;
-        const newRemark = document.getElementById(`edit-remark-${index}`).value.trim();
+        const stats = { ok: 0, warn: 0, danger: 0 };
 
-        row.status = newStatus;
-        row.remark = newRemark;
+        if (record.items && record.items.length > 0) {
+          record.items.forEach((row, index) => {
+            const checkedRadio = document.querySelector(`input[name="edit-status-${index}"]:checked`);
+            const remarkInput = document.getElementById(`edit-remark-${index}`);
+            
+            if (checkedRadio) {
+              row.status = checkedRadio.value;
+            }
+            if (remarkInput) {
+              row.remark = remarkInput.value.trim();
+            }
 
-        if (newStatus === "○") stats.ok++;
-        if (newStatus === "△") stats.warn++;
-        if (newStatus === "X") stats.danger++;
-      });
+            if (row.status === "○") stats.ok++;
+            if (row.status === "△") stats.warn++;
+            if (row.status === "X") stats.danger++;
+          });
+        }
 
-      record.etc = document.getElementById("edit-etc-textarea").value;
-      record.stats = stats;
-
-      // 로컬 보관소 반영 복사
-      localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
-      
-      closeEditModal();
-      renderAdminDashboard();
-      showCustomAlert("수정 성공", "해당 안전 점검 기록 내역이 성공적으로 업데이트되었습니다.");
+        record.stats = stats;
+        
+        localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
+    
+        showCustomAlert("성공", "기록이 성공적으로 수정 및 업데이트되었습니다.");
+        closeEditModal();
+        renderAdminDashboard();
+      }
     }
 
-    // 기록 완전 삭제 시스템 구현
-    let deleteTargetRecordId = null;
-    function openDeleteConfirmModal(id) {
-      deleteTargetRecordId = id;
-      document.getElementById("delete-confirm-modal").classList.remove("hidden");
-      
-      document.getElementById("btn-delete-confirm-action").onclick = () => {
-        executeDeleteRecord();
-      };
+    // 기록 개별/전체 삭제 모달 바인딩 및 구동부
+    function openDeleteModal(id) {
+      deleteTargetId = id;
+      document.getElementById('delete-confirm-modal').classList.remove('hidden');
     }
 
     function closeDeleteModal() {
-      document.getElementById("delete-confirm-modal").classList.add("hidden");
-      deleteTargetRecordId = null;
+      deleteTargetId = null;
+      document.getElementById('delete-confirm-modal').classList.add('hidden');
     }
 
-    function executeDeleteRecord() {
-      if(!deleteTargetRecordId) return;
-      
-      allSavedRecords = allSavedRecords.filter(r => r.id !== deleteTargetRecordId);
+    function deleteRecord() {
+      if (!deleteTargetId) return;
+
+      allSavedRecords = allSavedRecords.filter(r => r.id !== deleteTargetId);
       localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
-      
+
       closeDeleteModal();
       renderAdminDashboard();
-      changeScreen("admin-screen");
-      showCustomAlert("삭제 완료", "데이터가 데이터베이스에서 영구 소멸되었습니다.");
+
+      showCustomAlert("삭제 완료", "선택하신 안전 점검 결과 이력이 영구 소멸되었습니다.");
     }
 
-    // 관리자 원시 백업용 구글 스프레드시트 CSV 내보내기 엔진
+    // 원시 데이터 보존용 백업 CSV 파일 다운로드 기능
     function exportToCSV() {
       const selectedMonth = document.getElementById("admin-month-select").value;
       const filtered = allSavedRecords.filter(r => r && r.date && r.date.startsWith(selectedMonth));
 
-      if(filtered.length === 0) {
-        showCustomAlert("다운로드 불가", "선택하신 월에는 추출할 이력 데이터가 존재하지 않습니다.");
+      if (filtered.length === 0) {
+        showCustomAlert("다운로드 불가", "해당 조건에 내보낼 데이터가 없습니다.");
         return;
       }
 
-      // 엑셀 한글 깨짐 방지용 유니코드 바이트 오더 마크(BOM) 주입 정의
-      let csvContent = "\uFEFF";
+      let csvContent = "\uFEFF"; 
       csvContent += "점검일자,점검장소,점검자,상태우수(○),점검요청(△),이상발견(X),종합기타사항\n";
 
       filtered.forEach(r => {
         const etcClean = r.etc ? r.etc.replace(/"/g, '""') : ""; 
-        csvContent += `"${r.date}","${r.location}","${r.inspector}",${r.stats.ok},${r.stats.warn},${r.stats.danger},"${etcClean}"\n`;
+        csvContent += `"${r.date}","${r.location}","${r.inspector}",${r.stats?.ok || 0},${r.stats?.warn || 0},${r.stats?.danger || 0},"${etcClean}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1449,17 +1516,17 @@ function submitFinalReport() {
       document.body.removeChild(link);
     }
 
-    // 파일 클라이언트단 PDF 빌더 (html2pdf 패키지 완벽 구동 옵션 바인딩)
+    // 단일 보고서 PDF 파일 내보내기 
     function saveReportAsPDF() {
       const element = document.querySelector("#admin-report-container .print-area");
-      if(!element) {
-        showCustomAlert("오류", "리포트 컴포넌트를 탐색할 수 없습니다.");
+      if (!element) {
+        showCustomAlert("오류", "리포트를 탐색할 수 없습니다.");
         return;
       }
       
       const opt = {
         margin: [10, 10, 10, 10],
-        filename: `안전점검보고서_${document.getElementById("admin-month-select").value}.pdf`,
+        filename: `안전점검보고서_출력_${Date.now()}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -1468,8 +1535,7 @@ function submitFinalReport() {
       html2pdf().set(opt).from(element).save();
     }
 
-
-    // ==================== [공통 유틸리티 프레임워크 함수] ====================
+    // 공통 화면 전환 기능
     function changeScreen(screenId) {
       document.querySelectorAll(".screen-view").forEach(s => s.classList.add("hidden"));
       const target = document.getElementById(screenId);
@@ -1479,6 +1545,7 @@ function submitFinalReport() {
       }
     }
 
+    // 공통 알림 모달 제어 함수
     function showCustomAlert(title, message) {
       document.getElementById('alert-title').innerText = title;
       document.getElementById('alert-message').innerText = message;
@@ -1487,146 +1554,6 @@ function submitFinalReport() {
 
     function closeAlert() {
       document.getElementById('alert-modal').classList.add('hidden');
-    }
-
-    let deleteTargetId = null;
-
-    function openDeleteModal(id) {
-      deleteTargetId = id;
-      document.getElementById('delete-confirm-modal')
-              .classList.remove('hidden');
-    }
-
-    function closeDeleteModal() {
-      deleteTargetId = null;
-      document.getElementById('delete-confirm-modal')
-              .classList.add('hidden');
-    }
-
-    function deleteRecord() {
-
-      if (!deleteTargetId) return;
-
-      allSavedRecords = allSavedRecords.filter(
-        r => r.id !== deleteTargetId
-      );
-
-      localStorage.setItem(
-        'SCHOOL_SAFETY_RECORDS',
-        JSON.stringify(allSavedRecords)
-      );
-
-      closeDeleteModal();
-      renderAdminDashboard();
-
-      showCustomAlert(
-        "삭제 완료",
-        "선택한 점검 결과가 삭제되었습니다."
-      );
-    }
-    
-    // ====================================================
-    // [추가] 관리자 모드 - 기록 수정(Edit) 모달 제어 함수
-    // ====================================================
-
-    // 1. 수정 팝업창 열기 및 기존 데이터 불러오기
-    function openEditModal(recordId) {
-      // 전체 저장된 기록에서 수정하려는 ID 항목 찾기
-      const record = allSavedRecords.find(r => r.id === recordId);
-      if (!record) {
-        showCustomAlert("오류", "해당 점검 기록을 찾을 수 없습니다.");
-        return;
-      }
-
-      // 수정창 내부 입력 필드에 기존 값 세팅
-      document.getElementById("edit-record-id").value = record.id;
-      document.getElementById("edit-inspector").value = record.inspector;
-      document.getElementById("edit-etc").value = record.etc || "";
-
-      // 수정 모달창 화면에 표시 (hidden 클래스 제거)
-      const editModal = document.getElementById("admin-edit-modal");
-      if (editModal) {
-        editModal.classList.remove("hidden");
-      } else {
-        // 혹시 HTML에 수정 모달 ID가 없을 경우를 위한 대안 안내
-        showCustomAlert("안내", `${record.inspector} 선생님의 기록(장소: ${record.location})을 수정할 수 있는 편집 환경을 준비 중입니다.`);
-      }
-
-      // 관리자 수정 모달을 열 때 함께 실행되어야 합니다. (예: openEditModal 함수 내부)
-      const container = document.getElementById("edit-checklist-container");
-      container.innerHTML = ""; // 기존 내용 초기화
-
-      // 현재 수정하려는 record(기록)의 checklist 데이터가 있다면 실행
-      if (record.checklist && record.checklist.length > 0) {
-        record.checklist.forEach((item, index) => {
-          const itemDiv = document.createElement("div");
-         itemDiv.className = "p-2 bg-white rounded shadow-sm border text-sm";
-         itemDiv.innerHTML = `
-            <p class="font-semibold text-gray-800 mb-1">${index + 1}. ${item.question}</p>
-            <div class="flex gap-4 mt-1">
-              <label class="inline-flex items-center text-xs cursor-pointer">
-                <input type="radio" name="edit-status-${index}" value="양호" ${item.status === '양호' ? 'checked' : ''} class="mr-1"> 양호
-              </label>
-              <label class="inline-flex items-center text-xs cursor-pointer">
-                <input type="radio" name="edit-status-${index}" value="요정비" ${item.status === '요정비' ? 'checked' : ''} class="mr-1 text-yellow-500"> 요정비
-              </label>
-             <label class="inline-flex items-center text-xs cursor-pointer">
-                <input type="radio" name="edit-status-${index}" value="불량" ${item.status === '불량' ? 'checked' : ''} class="mr-1 text-red-500"> 불량
-              </label>
-            </div>
-          `;
-          container.appendChild(itemDiv);
-        });
-      } else {
-        container.innerHTML = "<p class='text-gray-500 text-xs text-center py-2'>저장된 체크리스트 상세 항목이 없습니다.</p>";
-      }
-    }
-
-    // 2. 수정 팝업창 닫기
-    function closeEditModal() {
-      const editModal = document.getElementById("admin-edit-modal");
-      if (editModal) {
-        editModal.classList.add("hidden");
-      }
-    }
-
-    // 3. 수정한 내용 최종 저장하기
-    function saveEditedRecord() {
-      const recordId = document.getElementById("edit-record-id").value;
-      const newInspector = document.getElementById("edit-inspector").value;
-      const newEtc = document.getElementById("edit-etc").value;
-
-      if (!newInspector.trim()) {
-        showCustomAlert("경고", "점검자 이름은 비워둘 수 없습니다.");
-        return;
-      }
-        
-      // 로컬 배열 데이터 업데이트
-      const recordIndex = allSavedRecords.findIndex(r => r.id === recordId);
-      if (recordIndex !== -1) {
-        allSavedRecords[recordIndex].inspector = newInspector;
-        allSavedRecords[recordIndex].etc = newEtc;
-
-      if (allSavedRecords[recordIndex].checklist) {
-            allSavedRecords[recordIndex].checklist.forEach((item, index) => {
-              const checkedRadio = document.querySelector(`input[name="edit-status-${index}"]:checked`);
-              if (checkedRadio) {
-                item.status = checkedRadio.value; // '양호', '요정비', '불량' 중 선택된 값 저장
-              }
-            });
-          }
-        
-        // 로컬 스토리지에 최종 저장
-        localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
-    
-        showCustomAlert("성공", "기록이 성공적으로 수정되었습니다.");
-        closeEditModal();
-    
-        // 관리자 화면 실시간 새로고침하여 반영
-        if (typeof renderAdminDashboard === "function") {
-          renderAdminDashboard();
-        }
-      }
     }
   </script>
 </body>
