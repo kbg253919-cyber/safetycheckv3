@@ -128,9 +128,24 @@
 
     }
 
-.pdf-table td{
+    .pdf-table td{
 
-    page-break-inside:avoid;
+        page-break-inside:avoid;
+
+    }
+    .pdf-report{
+
+        display:flex;
+
+        flex-direction:column;
+
+        min-height:277mm;
+
+    }
+
+.pdf-report .report-bottom{
+
+    margin-top:auto;
 
 }
   </style>
@@ -326,12 +341,14 @@
             </p>
             
             <div class="flex items-center gap-4 mt-1">
+              <div class="report-bottom">
               <span class="text-slate-500 font-bold text-xs md:text-sm">점검자 서명:</span>
               <div class="relative bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl overflow-hidden w-48 md:w-64 h-20 shadow-inner no-print" id="signature-container">
                 <canvas id="signature-canvas" class="signature-canvas w-full h-full cursor-crosshair"></canvas>
                 <button onclick="clearSignature()" class="absolute right-2 top-2 bg-slate-200 hover:bg-slate-300 text-slate-600 hover:text-slate-800 text-[10px] font-bold py-1 px-2 rounded-md transition-all" title="지우기">
                   지우기
                 </button>
+              </div>
               </div>
               <div id="print-signature-img-wrapper" class="h-16 w-36 md:h-20 md:w-44 border border-slate-200 rounded-lg flex items-center justify-center bg-slate-50">
                 <span id="signature-placeholder-text" class="text-slate-300 text-[11px]">서명 전</span>
@@ -1327,7 +1344,7 @@ function submitFinalReport() {
 
       // 템플릿 복사 및 정적 인쇄 본문 주입
       const reportHtml = `
-        <div class="print-area border border-slate-300 rounded-xl bg-white p-4 relative text-xs">
+        <div class="print-area pdf-report border border-slate-300 rounded-xl bg-white p-4 relative text-xs">
           <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
             <div>
               <h3 class="text-xl font-black text-slate-900 underline decoration-indigo-500 decoration-4 underline-offset-8">안전점검 결과 보고서</h3>
