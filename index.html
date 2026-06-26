@@ -1468,12 +1468,26 @@ function submitFinalReport() {
 
     // ====== [추가할 코드] 화면 전환을 담당하는 핵심 함수 ======
     function changeScreen(screenId) {
-      // 이 프로그램에 존재하는 주요 화면 ID 목록들
-      const screenIds = [
-        'main-view', 'inspection-view', 'admin-view', 
-        'main-screen', 'inspection-screen', 'admin-screen',
-        'main-page', 'inspection-page', 'admin-page'
-      ];
+      const screens = ['main-view', 'inspection-view', 'admin-view'];
+  
+      screens.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (id === screenId) {
+            // 보일 화면: hidden 제거 및 기존 레이아웃 스타일 원복
+            el.classList.remove('hidden');
+            el.style.removeProperty('display');
+          } else {
+            // 숨길 화면: hidden 추가 및 강제 display none 처리 (Tailwind 충돌 방지)
+            el.classList.add('hidden');
+            el.style.setProperty('display', 'none', 'important');
+          }
+        }
+      });
+  
+      // 화면이 바뀔 때 스크롤을 가장 위로 올려 줍니다.
+      window.scrollTo(0, 0);
+    }
   
       // 모든 화면 요소를 돌면서, 요청된 screenId만 보여주고(hidden 제거) 나머지는 숨김(hidden 추가)
       screenIds.forEach(id => {
