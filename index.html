@@ -52,109 +52,6 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
-    /* =========================
-       PDF 출력용
-    ========================= */
-
-    #pdf-temp-wrapper{
-
-        overflow:visible !important;
-
-    }
-
-    #pdf-temp-wrapper *{
-
-        max-height:none !important;
-
-    }
-
-    #pdf-temp-wrapper table{
-
-        width:100%;
-
-        border-collapse:collapse;
-
-    }
-
-    #pdf-temp-wrapper tr{
-
-        page-break-inside:avoid;
-
-    }
-
-    #pdf-temp-wrapper td{
-
-        page-break-inside:avoid;
-
-    }
-    .avoid-page-break{
-        page-break-inside: avoid;
-        break-inside: avoid;
-    }
-    .pdf-export{
-
-        transform:none !important;
-
-        display:block !important;
-
-    }
-
-    .pdf-export *{
-
-        break-inside:avoid-page !important;
-
-    }
-
-    .pdf-export table{
-
-        table-layout:fixed;
-
-    }
-
-    .pdf-export img{
-
-        max-width:100% !important;
-
-    }
-    .pdf-table{
-
-        page-break-inside:auto;
-
-    }
-
-    .pdf-table tr{
-
-        page-break-inside:avoid;
-
-    }
-
-    .pdf-table td{
-
-        page-break-inside:avoid;
-
-    }
-    .pdf-report{
-
-        display:flex;
-
-        flex-direction:column;
-
-        min-height:277mm;
-
-    }
-
-    .pdf-report .report-bottom{
-
-        margin-top:auto;
-
-    }
-    .pdf-export{
-
-        -webkit-print-color-adjust: exact;
-
-       print-color-adjust: exact;
-
-    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
@@ -348,14 +245,12 @@
             </p>
             
             <div class="flex items-center gap-4 mt-1">
-              <div class="report-bottom">
               <span class="text-slate-500 font-bold text-xs md:text-sm">점검자 서명:</span>
               <div class="relative bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl overflow-hidden w-48 md:w-64 h-20 shadow-inner no-print" id="signature-container">
                 <canvas id="signature-canvas" class="signature-canvas w-full h-full cursor-crosshair"></canvas>
                 <button onclick="clearSignature()" class="absolute right-2 top-2 bg-slate-200 hover:bg-slate-300 text-slate-600 hover:text-slate-800 text-[10px] font-bold py-1 px-2 rounded-md transition-all" title="지우기">
                   지우기
                 </button>
-              </div>
               </div>
               <div id="print-signature-img-wrapper" class="h-16 w-36 md:h-20 md:w-44 border border-slate-200 rounded-lg flex items-center justify-center bg-slate-50">
                 <span id="signature-placeholder-text" class="text-slate-300 text-[11px]">서명 전</span>
@@ -1351,7 +1246,7 @@ function submitFinalReport() {
 
       // 템플릿 복사 및 정적 인쇄 본문 주입
       const reportHtml = `
-        <div class="print-area pdf-report border border-slate-300 rounded-xl bg-white p-4 relative text-xs">
+        <div class="print-area border border-slate-300 rounded-xl bg-white p-6 md:p-8 relative text-xs">
           <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
             <div>
               <h3 class="text-xl font-black text-slate-900 underline decoration-indigo-500 decoration-4 underline-offset-8">안전점검 결과 보고서</h3>
@@ -1466,42 +1361,6 @@ function submitFinalReport() {
       editingRecordId = null;
     }
 
-    // ====== [추가할 코드] 화면 전환을 담당하는 핵심 함수 ======
-    function changeScreen(screenId) {
-      const screens = ['main-view', 'inspection-view', 'admin-view'];
-  
-      screens.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          if (id === screenId) {
-            // 보일 화면: hidden 제거 및 기존 레이아웃 스타일 원복
-            el.classList.remove('hidden');
-            el.style.removeProperty('display');
-          } else {
-            // 숨길 화면: hidden 추가 및 강제 display none 처리 (Tailwind 충돌 방지)
-            el.classList.add('hidden');
-            el.style.setProperty('display', 'none', 'important');
-          }
-        }
-      });
-  
-      // 화면이 바뀔 때 스크롤을 가장 위로 올려 줍니다.
-      window.scrollTo(0, 0);
-    }
-  
-      // 모든 화면 요소를 돌면서, 요청된 screenId만 보여주고(hidden 제거) 나머지는 숨김(hidden 추가)
-      screenIds.forEach(id => {
-        const screenElement = document.getElementById(id);
-        if (screenElement) {
-          if (id === screenId) {
-            screenElement.classList.remove('hidden'); // 화면 표시
-          } else {
-            screenElement.classList.add('hidden');    // 화면 숨김
-          }
-        }
-      });
-    }
-    
     function saveEditedReport() {
       if(!editingRecordId) return;
       const record = allSavedRecords.find(r => r.id === editingRecordId);
@@ -1533,31 +1392,6 @@ function submitFinalReport() {
       showCustomAlert("수정 성공", "해당 안전 점검 기록 내역이 성공적으로 업데이트되었습니다.");
     }
 
-    // ====== [화면 전환을 담당하는 핵심 함수] ======
-    function changeScreen(screenId) {
-      // 이 프로그램에서 사용하는 모든 화면 ID 목록
-      const screenIds = [
-        'main-view', 'inspection-view', 'admin-view', 
-        'main-screen', 'inspection-screen', 'admin-screen'
-      ];
-  
-      // 1. 우선 모든 화면을 숨깁니다 (Tailwind의 hidden 클래스 추가)
-      screenIds.forEach(id => {
-        const screenElement = document.getElementById(id);
-        if (screenElement) {
-          screenElement.classList.add('hidden');
-        }
-      });
-  
-      // 2. 가고자 하는 특정 화면만 보여줍니다 (hidden 클래스 제거)
-      const targetScreen = document.getElementById(screenId);
-      if (targetScreen) {
-        targetScreen.classList.remove('hidden');
-      } else {
-        console.error("이동하려는 화면을 찾을 수 없습니다: " + screenId);
-      }
-    }
-    
     // 기록 완전 삭제 시스템 구현
     let deleteTargetRecordId = null;
     function openDeleteConfirmModal(id) {
@@ -1616,116 +1450,22 @@ function submitFinalReport() {
     }
 
     // 파일 클라이언트단 PDF 빌더 (html2pdf 패키지 완벽 구동 옵션 바인딩)
-    async function saveReportAsPDF() {
-
-        const original = document.querySelector("#admin-report-container .print-area");
-
-        if (!original) {
-            showCustomAlert("오류", "출력할 보고서를 찾을 수 없습니다.");
-            return;
-        }
-
-        // ---------- 임시 출력영역 ----------
-        const wrapper = document.createElement("div");
-
-        wrapper.id = "pdf-temp-wrapper";
-
-        wrapper.style.position = "fixed";
-        wrapper.style.left = "-10000px";
-        wrapper.style.top = "0";
-        wrapper.style.width = "210mm";
-        wrapper.style.background = "#ffffff";
-        wrapper.style.padding = "0";
-        wrapper.style.margin = "0";
-        wrapper.style.zIndex = "-1";
-
-        document.body.appendChild(wrapper);
-
-        // ---------- 보고서 복사 ----------
-        const clone = original.cloneNode(true);
-
-        clone.classList.add("pdf-export");
-        clone.style.width = "190mm";
-        clone.style.margin = "0 auto";
-        clone.style.padding = "10mm";
-        clone.style.boxSizing = "border-box";
-
-        clone.style.height = "auto";
-        clone.style.maxHeight = "none";
-        clone.style.minHeight = "0";
-
-        clone.style.overflow = "visible";
-
-        wrapper.appendChild(clone);
-
-        // ---------- PDF에서는 버튼 숨김 ----------
-        clone.querySelectorAll(".no-print").forEach(el=>{
-            el.remove();
-        });
-
-        // ---------- flex를 block으로 변경 ----------
-        clone.querySelectorAll(".flex").forEach(el=>{
-
-            if(el.classList.contains("justify-between")){
-
-                el.style.display="block";
-
-            }
-
-        });
-
-        // ---------- 표 잘림 방지 ----------
-        clone.querySelectorAll("table").forEach(table=>{
-            table.style.pageBreakInside="auto";
-
-        });
-
-        clone.querySelectorAll("tr").forEach(tr=>{
-            tr.style.pageBreakInside="avoid";
-
-        });
-
-        clone.querySelectorAll("td").forEach(td=>{
-            td.style.pageBreakInside="avoid";
-
-        });
-
-        // ---------- PDF 저장 ----------
-        try{
-
-          await html2pdf()
-
-            .set({
-                margin:0,
-                filename:`안전점검결과_${Date.now()}.pdf`,
-                image:{
-                    type:"jpeg",
-                    quality:1
-                },
-
-                html2canvas:{
-                    scale:3,
-                    useCORS:true,
-                    allowTaint:true,
-                    scrollX:0,
-                    scrollY:0,
-                    windowWidth:wrapper.scrollWidth,
-                    windowHeight:wrapper.scrollHeight
-
-                },
-                pagebreak:{
-                    mode:["css","legacy"]
-                },
-                jsPDF:{
-                    unit:"mm",
-                    format:"a4",
-                    orientation:"portrait"
-                }
-            })
-            .from(wrapper)
-            .save();
-        }finally{  
-        wrapper.remove();
+    function saveReportAsPDF() {
+      const element = document.querySelector("#admin-report-container .print-area");
+      if(!element) {
+        showCustomAlert("오류", "리포트 컴포넌트를 탐색할 수 없습니다.");
+        return;
+      }
+      
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `안전점검보고서_${document.getElementById("admin-month-select").value}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      
+      html2pdf().set(opt).from(element).save();
     }
 
 
@@ -1843,8 +1583,15 @@ function submitFinalReport() {
     }
 
     // 2. 수정 팝업창 닫기
+    function closeEditModal() {
+      const editModal = document.getElementById("admin-edit-modal");
+      if (editModal) {
+        editModal.classList.add("hidden");
+      }
+    }
+
     // 3. 수정한 내용 최종 저장하기
-    function saveEditedReport() {
+    function saveEditedRecord() {
       const recordId = document.getElementById("edit-record-id").value;
       const newInspector = document.getElementById("edit-inspector").value;
       const newEtc = document.getElementById("edit-etc").value;
@@ -1860,14 +1607,14 @@ function submitFinalReport() {
         allSavedRecords[recordIndex].inspector = newInspector;
         allSavedRecords[recordIndex].etc = newEtc;
 
-        if (allSavedRecords[recordIndex].checklist) {
-          allSavedRecords[recordIndex].checklist.forEach((item, index) => {
-            const checkedRadio = document.querySelector(`input[name="edit-status-${index}"]:checked`);
-            if (checkedRadio) {
-              item.status = checkedRadio.value; // '양호', '요정비', '불량' 중 선택된 값 저장
-            }
-          });
-        }
+      if (allSavedRecords[recordIndex].checklist) {
+            allSavedRecords[recordIndex].checklist.forEach((item, index) => {
+              const checkedRadio = document.querySelector(`input[name="edit-status-${index}"]:checked`);
+              if (checkedRadio) {
+                item.status = checkedRadio.value; // '양호', '요정비', '불량' 중 선택된 값 저장
+              }
+            });
+          }
         
         // 로컬 스토리지에 최종 저장
         localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
@@ -1876,10 +1623,11 @@ function submitFinalReport() {
         closeEditModal();
     
         // 관리자 화면 실시간 새로고침하여 반영
-        renderAdminDashboard();
-       }
-      } // if (recordIndex !== -1) 닫기
-    } // function saveEditedReport 닫기
+        if (typeof renderAdminDashboard === "function") {
+          renderAdminDashboard();
+        }
+      }
+    }
   </script>
 </body>
 </html>
