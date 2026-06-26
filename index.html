@@ -1782,13 +1782,6 @@ function submitFinalReport() {
     }
 
     // 2. 수정 팝업창 닫기
-    function closeEditModal() {
-      const editModal = document.getElementById("admin-edit-modal");
-      if (editModal) {
-        editModal.classList.add("hidden");
-      }
-    }
-
     // 3. 수정한 내용 최종 저장하기
     function saveEditedRecord() {
       const recordId = document.getElementById("edit-record-id").value;
@@ -1799,33 +1792,35 @@ function submitFinalReport() {
         showCustomAlert("경고", "점검자 이름은 비워둘 수 없습니다.");
         return;
       }
-        
+    
       // 로컬 배열 데이터 업데이트
       const recordIndex = allSavedRecords.findIndex(r => r.id === recordId);
+  
       if (recordIndex !== -1) {
         allSavedRecords[recordIndex].inspector = newInspector;
         allSavedRecords[recordIndex].etc = newEtc;
 
-      if (allSavedRecords[recordIndex].checklist) {
-            allSavedRecords[recordIndex].checklist.forEach((item, index) => {
-              const checkedRadio = document.querySelector(`input[name="edit-status-${index}"]:checked`);
-              if (checkedRadio) {
-                item.status = checkedRadio.value; // '양호', '요정비', '불량' 중 선택된 값 저장
-              }
-            });
-          }
-        
+        // 체크리스트 상태 업데이트 (존재하는 경우에만 실행)
+        if (allSavedRecords[recordIndex].checklist) {
+          allSavedRecords[recordIndex].checklist.forEach((item, index) => {
+            const checkedRadio = document.querySelector(`input[name="edit-status-${index}"]:checked`);
+            if (checkedRadio) {
+              item.status = checkedRadio.value; // '양호', '요정비', '불량' 중 선택된 값 저장
+            }
+          });
+        }
+    
         // 로컬 스토리지에 최종 저장
         localStorage.setItem('SCHOOL_SAFETY_RECORDS', JSON.stringify(allSavedRecords));
-    
+
         showCustomAlert("성공", "기록이 성공적으로 수정되었습니다.");
         closeEditModal();
-    
-        // 관리자 화면 실시간 새로고침하여 반영
-        if (typeof renderAdminDashboard === "function") {
-          renderAdminDashboard();
+
+        // 관리자 화면 실시간 새로고침 함수가 존재하면 실행
+        if (typeof loadSavedRecords === "function") {
+          loadSavedRecords();
         }
-      }
+      } 
     }
   </script>
 </body>
