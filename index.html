@@ -91,6 +91,48 @@
         page-break-inside: avoid;
         break-inside: avoid;
     }
+    .pdf-export{
+
+        transform:none !important;
+
+        display:block !important;
+
+    }
+
+    .pdf-export *{
+
+        break-inside:avoid-page !important;
+
+    }
+
+    .pdf-export table{
+
+        table-layout:fixed;
+
+    }
+
+    .pdf-export img{
+
+        max-width:100% !important;
+
+    }
+    .pdf-table{
+
+        page-break-inside:auto;
+
+    }
+
+    .pdf-table tr{
+
+        page-break-inside:avoid;
+
+    }
+
+.pdf-table td{
+
+    page-break-inside:avoid;
+
+}
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
@@ -1285,7 +1327,7 @@ function submitFinalReport() {
 
       // 템플릿 복사 및 정적 인쇄 본문 주입
       const reportHtml = `
-        <div class="print-area border border-slate-300 rounded-xl bg-white p-6 md:p-8 relative text-xs">
+        <div class="print-area border border-slate-300 rounded-xl bg-white p-4 relative text-xs">
           <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
             <div>
               <h3 class="text-xl font-black text-slate-900 underline decoration-indigo-500 decoration-4 underline-offset-8">안전점검 결과 보고서</h3>
@@ -1517,6 +1559,7 @@ function submitFinalReport() {
         // ---------- 보고서 복사 ----------
         const clone = original.cloneNode(true);
 
+        clone.classList.add("pdf-export");
         clone.style.width = "190mm";
         clone.style.margin = "0 auto";
         clone.style.padding = "10mm";
@@ -1548,79 +1591,55 @@ function submitFinalReport() {
 
         // ---------- 표 잘림 방지 ----------
         clone.querySelectorAll("table").forEach(table=>{
-
             table.style.pageBreakInside="auto";
 
         });
 
         clone.querySelectorAll("tr").forEach(tr=>{
-
             tr.style.pageBreakInside="avoid";
 
         });
 
         clone.querySelectorAll("td").forEach(td=>{
-
             td.style.pageBreakInside="avoid";
 
         });
 
         // ---------- PDF 저장 ----------
-        await html2pdf()
+        try{
+            await html2pdf()
 
             .set({
-
                 margin:0,
-
                 filename:`안전점검결과_${Date.now()}.pdf`,
-
                 image:{
                     type:"jpeg",
                     quality:1
                 },
 
                 html2canvas:{
-
                     scale:3,
-
                     useCORS:true,
-
                     allowTaint:true,
-
                     scrollX:0,
-
                     scrollY:0,
-
                     windowWidth:wrapper.scrollWidth,
-
                     windowHeight:wrapper.scrollHeight
 
                 },
-
                 pagebreak:{
-
                     mode:["css","legacy"]
-
                 },
-
                 jsPDF:{
-
                     unit:"mm",
-
                     format:"a4",
-
                     orientation:"portrait"
-
                 }
-
             })
-
             .from(wrapper)
-
             .save();
-
+        }finally{  
         wrapper.remove();
-
     }
 
 
